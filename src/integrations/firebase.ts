@@ -95,11 +95,472 @@ const mapFirebaseUserToSession = (firebaseUser: any): Session | null => {
   };
 };
 
+// Local Storage Seed Data Seeder for Net-Z Platform
+function getLocalStorageSeedData(tableName: string, userId: string): any[] {
+  if (tableName === 'user_roles') {
+    return [
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        role: 'admin',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
+  }
+  
+  if (tableName === 'profiles') {
+    return [
+      {
+        id: userId,
+        user_id: userId,
+        company_name: 'Almac Group',
+        industry: 'Pharmaceuticals',
+        company_size: '1000-5000',
+        currency: 'GBP',
+        base_year: 2021,
+        is_approved: true,
+        period_start_month: 1,
+        period_start_day: 1,
+        period_end_month: 12,
+        period_end_day: 31,
+        summary: 'Leading pharmaceutical development and manufacturing partner, tracking emissions across all scopes to achieve net-zero target.',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
+  }
+
+  if (tableName === 'emissions_data') {
+    return [
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        reporting_year: 2021,
+        scope_1_emissions: 1500,
+        scope_2_emissions: 2400,
+        scope_2_location_based: 2500,
+        scope_3_emissions: 12000,
+        revenue: 50000000,
+        ecovadis_score: 55,
+        cdp_score: 'B',
+        sbti_target_status: 'committed',
+        scope3_breakdown: {
+          purchased_goods: 6000,
+          capital_goods: 1500,
+          fuel_energy: 1000,
+          upstream_transport: 800,
+          waste: 200,
+          business_travel: 1200,
+          employee_commuting: 800,
+          upstream_leased: 500
+        },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        reporting_year: 2022,
+        scope_1_emissions: 1420,
+        scope_2_emissions: 2200,
+        scope_2_location_based: 2300,
+        scope_3_emissions: 11500,
+        revenue: 55000000,
+        ecovadis_score: 60,
+        cdp_score: 'B',
+        sbti_target_status: 'committed',
+        scope3_breakdown: {
+          purchased_goods: 5800,
+          capital_goods: 1400,
+          fuel_energy: 950,
+          upstream_transport: 750,
+          waste: 180,
+          business_travel: 1150,
+          employee_commuting: 770,
+          upstream_leased: 500
+        },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        reporting_year: 2023,
+        scope_1_emissions: 1350,
+        scope_2_emissions: 1950,
+        scope_2_location_based: 2100,
+        scope_3_emissions: 10800,
+        revenue: 62000000,
+        ecovadis_score: 68,
+        cdp_score: 'A-',
+        sbti_target_status: 'approved',
+        scope3_breakdown: {
+          purchased_goods: 5400,
+          capital_goods: 1300,
+          fuel_energy: 900,
+          upstream_transport: 700,
+          waste: 150,
+          business_travel: 1100,
+          employee_commuting: 750,
+          upstream_leased: 500
+        },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        reporting_year: 2024,
+        scope_1_emissions: 1210,
+        scope_2_emissions: 1700,
+        scope_2_location_based: 1800,
+        scope_3_emissions: 9900,
+        revenue: 70000000,
+        ecovadis_score: 75,
+        cdp_score: 'A-',
+        sbti_target_status: 'approved',
+        scope3_breakdown: {
+          purchased_goods: 4900,
+          capital_goods: 1200,
+          fuel_energy: 850,
+          upstream_transport: 650,
+          waste: 120,
+          business_travel: 1000,
+          employee_commuting: 700,
+          upstream_leased: 480
+        },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        reporting_year: 2025,
+        scope_1_emissions: 1050,
+        scope_2_emissions: 1450,
+        scope_2_location_based: 1500,
+        scope_3_emissions: 8800,
+        revenue: 80000000,
+        ecovadis_score: 82,
+        cdp_score: 'A',
+        sbti_target_status: 'approved',
+        scope3_breakdown: {
+          purchased_goods: 4300,
+          capital_goods: 1100,
+          fuel_energy: 800,
+          upstream_transport: 600,
+          waste: 100,
+          business_travel: 900,
+          employee_commuting: 600,
+          upstream_leased: 400
+        },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
+  }
+
+  if (tableName === 'clients') {
+    return [
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        company_name: 'Pfizer',
+        country: 'United States',
+        reporting_year: 2025,
+        revenue: 12000000,
+        apportioned_emissions: 1695,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        company_name: 'Roche',
+        country: 'Switzerland',
+        reporting_year: 2025,
+        revenue: 9500000,
+        apportioned_emissions: 1341,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        company_name: 'Novartis',
+        country: 'Switzerland',
+        reporting_year: 2025,
+        revenue: 8000000,
+        apportioned_emissions: 1130,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        company_name: 'AstraZeneca',
+        country: 'United Kingdom',
+        reporting_year: 2025,
+        revenue: 6500000,
+        apportioned_emissions: 918,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        company_name: 'GSK',
+        country: 'United Kingdom',
+        reporting_year: 2025,
+        revenue: 5000000,
+        apportioned_emissions: 706,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
+  }
+
+  if (tableName === 'netzero_targets') {
+    return [
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        base_year: 2021,
+        near_term_target_year: 2030,
+        netzero_target_year: 2040,
+        scope_1_2_reduction_percent: 50,
+        scope_3_reduction_percent: 42,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
+  }
+
+  if (tableName === 'carbon_budgets') {
+    return [
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        discount_rate: 3.5,
+        scope_1_carbon_cost: 95,
+        scope_2_carbon_cost: 95,
+        scope_3_carbon_cost: 50,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
+  }
+
+  if (tableName === 'sustainability_credentials') {
+    return [
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        credential_name: 'EcoVadis Gold Medal',
+        credential_type: 'ecovadis',
+        score_or_level: 'Gold',
+        status: 'Active',
+        valid_until: '2026-12-31',
+        display_order: 1,
+        logo_url: null,
+        certificate_url: null,
+        attachment_url: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        credential_name: 'CDP Climate Change A-',
+        credential_type: 'cdp',
+        score_or_level: 'A-',
+        status: 'Active',
+        valid_until: '2026-12-31',
+        display_order: 2,
+        logo_url: null,
+        certificate_url: null,
+        attachment_url: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        credential_name: 'SBTi Net-Zero Approved Target',
+        credential_type: 'sbti',
+        score_or_level: 'Approved',
+        status: 'Active',
+        valid_until: '2030-12-31',
+        display_order: 3,
+        logo_url: null,
+        certificate_url: null,
+        attachment_url: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
+  }
+
+  if (tableName === 'emission_reduction_projects') {
+    return [
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        name: 'Solar Array Installation',
+        description: 'Installed 500kW solar panel system on manufacturing building roof.',
+        scope_type: 'scope_2',
+        status: 'Completed',
+        project_cost: 250000,
+        annual_emission_savings: 180,
+        start_year: 2022,
+        end_year: 2023,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        name: 'Boiler Electrification',
+        description: 'Replace natural gas steam boilers with high efficiency electric boilers.',
+        scope_type: 'scope_1',
+        status: 'In Progress',
+        project_cost: 480000,
+        annual_emission_savings: 320,
+        start_year: 2024,
+        end_year: 2026,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        name: 'EV Fleet Conversion',
+        description: 'Convert corporate sales and logistics fleet to 100% electric vehicles.',
+        scope_type: 'scope_1',
+        status: 'Planned',
+        project_cost: 350000,
+        annual_emission_savings: 140,
+        start_year: 2025,
+        end_year: 2028,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
+  }
+
+  if (tableName === 'industry_benchmarks') {
+    return [
+      {
+        id: crypto.randomUUID(),
+        company_name: 'Industry Average (Pharma)',
+        industry: 'Pharmaceuticals',
+        year: 2025,
+        avg_scope_1_intensity: 15.2,
+        avg_scope_2_intensity: 22.4,
+        avg_scope_3_intensity: 118.5,
+        avg_ecovadis_score: 64,
+        avg_cdp_score: 'B',
+        sbti_adoption_rate: 45,
+        is_leader: false,
+        created_at: new Date().toISOString()
+      },
+      {
+        id: crypto.randomUUID(),
+        company_name: 'Sustainability Leaders (Pharma)',
+        industry: 'Pharmaceuticals',
+        year: 2025,
+        avg_scope_1_intensity: 8.5,
+        avg_scope_2_intensity: 11.2,
+        avg_scope_3_intensity: 82.0,
+        avg_ecovadis_score: 78,
+        avg_cdp_score: 'A',
+        sbti_adoption_rate: 90,
+        is_leader: true,
+        created_at: new Date().toISOString()
+      }
+    ];
+  }
+
+  if (tableName === 'carbon_calc_entries') {
+    return [
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        reporting_year: 2025,
+        scope: 1,
+        category: 'fuel_energy',
+        sub_category: 'Natural Gas',
+        amount_tco2e: 450,
+        description: 'Facility heating boilers natural gas consumption',
+        emission_factor: 0.18387,
+        emission_factor_source: 'DEFRA 2025 - Natural Gas',
+        data_quality: 'High',
+        confidence_score: 95,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        reporting_year: 2025,
+        scope: 2,
+        category: 'fuel_energy',
+        sub_category: 'Electricity',
+        amount_tco2e: 820,
+        description: 'Purchased electricity grid consumption for HQ office',
+        emission_factor: 0.20707,
+        emission_factor_source: 'DEFRA 2025 - UK Electricity',
+        data_quality: 'Medium',
+        confidence_score: 85,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        reporting_year: 2025,
+        scope: 3,
+        category: 'business_travel',
+        sub_category: 'Flights',
+        amount_tco2e: 120,
+        description: 'Transatlantic business travel flights for sales team',
+        emission_factor: 0.15,
+        emission_factor_source: 'DEFRA 2025 - Business Travel Flights',
+        data_quality: 'High',
+        confidence_score: 90,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        reporting_year: 2025,
+        scope: 3,
+        category: 'purchased_goods',
+        sub_category: 'SaaS Software',
+        amount_tco2e: 80,
+        description: 'Cloud hosting and software subscription licenses',
+        emission_factor: 0.08,
+        emission_factor_source: 'DEFRA 2025 - IT Services',
+        data_quality: 'Medium',
+        confidence_score: 80,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
+  }
+
+  return [];
+}
+
 // Chainable Firebase Query Builder imitating Supabase's PostgREST client
 class FirebaseQueryBuilder {
   private tableName: string;
   private db: any;
-  private constraints: QueryConstraint[] = [];
+  private filters: Array<{ column: string; operator: '==' | '!=' | 'in'; value: any }> = [];
+  private sortOrder: { column: string; ascending: boolean } | null = null;
+  private limitVal: number | null = null;
   private dataToInsertOrUpdate: any = null;
   private isInsert = false;
   private isUpdate = false;
@@ -117,33 +578,32 @@ class FirebaseQueryBuilder {
 
   eq(column: string, value: any) {
     if (value !== undefined && value !== null) {
-      this.constraints.push(where(column, '==', value));
+      this.filters.push({ column, operator: '==', value });
     }
     return this;
   }
 
   neq(column: string, value: any) {
     if (value !== undefined && value !== null) {
-      this.constraints.push(where(column, '!=', value));
+      this.filters.push({ column, operator: '!=', value });
     }
     return this;
   }
 
   in(column: string, values: any[]) {
     if (values && values.length > 0) {
-      this.constraints.push(where(column, 'in', values));
+      this.filters.push({ column, operator: 'in', value: values });
     }
     return this;
   }
 
   order(column: string, options?: { ascending?: boolean }) {
-    const asc = options?.ascending !== false;
-    this.constraints.push(orderBy(column, asc ? 'asc' : 'desc'));
+    this.sortOrder = { column, ascending: options?.ascending !== false };
     return this;
   }
 
   limit(limitVal: number) {
-    this.constraints.push(limit(limitVal));
+    this.limitVal = limitVal;
     return this;
   }
 
@@ -170,8 +630,19 @@ class FirebaseQueryBuilder {
     return this;
   }
 
-  private async execute() {
+  private async executeFirestore() {
     const colRef = collection(this.db, this.tableName);
+    const constraints: QueryConstraint[] = [];
+    
+    for (const f of this.filters) {
+      constraints.push(where(f.column, f.operator, f.value));
+    }
+    if (this.sortOrder) {
+      constraints.push(orderBy(this.sortOrder.column, this.sortOrder.ascending ? 'asc' : 'desc'));
+    }
+    if (this.limitVal !== null) {
+      constraints.push(limit(this.limitVal));
+    }
 
     if (this.isInsert) {
       const rows = Array.isArray(this.dataToInsertOrUpdate) 
@@ -195,7 +666,7 @@ class FirebaseQueryBuilder {
     }
 
     if (this.isUpdate) {
-      const q = query(colRef, ...this.constraints);
+      const q = query(colRef, ...constraints);
       const snapshot = await getDocs(q);
       const updatedRows: any[] = [];
       
@@ -257,7 +728,7 @@ class FirebaseQueryBuilder {
     }
 
     if (this.isDelete) {
-      const q = query(colRef, ...this.constraints);
+      const q = query(colRef, ...constraints);
       const snapshot = await getDocs(q);
       for (const d of snapshot.docs) {
         const docRef = doc(this.db, this.tableName, d.id);
@@ -267,10 +738,207 @@ class FirebaseQueryBuilder {
     }
 
     // Default: GET
-    const q = query(colRef, ...this.constraints);
+    const q = query(colRef, ...constraints);
     const snapshot = await getDocs(q);
     const results = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     return { data: results, error: null };
+  }
+
+  private async executeLocalStorage() {
+    const storageKey = `local_db_${this.tableName}`;
+    
+    const getLocalData = (): any[] => {
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (!raw) return [];
+        return JSON.parse(raw);
+      } catch (e) {
+        console.error(`Error parsing localStorage for ${this.tableName}:`, e);
+        return [];
+      }
+    };
+
+    const saveLocalData = (data: any[]) => {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(data));
+      } catch (e) {
+        console.error(`Error saving localStorage for ${this.tableName}:`, e);
+      }
+    };
+
+    let localData = getLocalData();
+    const currentUserId = auth.currentUser?.uid;
+
+    if (localData.length === 0 && currentUserId) {
+      const seed = getLocalStorageSeedData(this.tableName, currentUserId);
+      if (seed.length > 0) {
+        localData = seed;
+        saveLocalData(localData);
+      }
+    }
+
+    if (this.isInsert) {
+      const rows = Array.isArray(this.dataToInsertOrUpdate) 
+        ? this.dataToInsertOrUpdate 
+        : [this.dataToInsertOrUpdate];
+      
+      const insertedRows = rows.map((row: any) => ({
+        ...row,
+        id: row.id || crypto.randomUUID(),
+        created_at: row.created_at || new Date().toISOString(),
+        updated_at: row.updated_at || new Date().toISOString(),
+      }));
+
+      localData.push(...insertedRows);
+      saveLocalData(localData);
+
+      return { data: Array.isArray(this.dataToInsertOrUpdate) ? insertedRows : insertedRows[0], error: null };
+    }
+
+    if (this.isUpdate) {
+      const updatedRows: any[] = [];
+      localData = localData.map((row: any) => {
+        let matches = true;
+        for (const f of this.filters) {
+          const val = row[f.column];
+          if (f.operator === '==' && val !== f.value) matches = false;
+          if (f.operator === '!=' && val === f.value) matches = false;
+          if (f.operator === 'in' && (!Array.isArray(f.value) || !f.value.includes(val))) matches = false;
+        }
+
+        if (matches) {
+          const updatedRow = {
+            ...row,
+            ...this.dataToInsertOrUpdate,
+            updated_at: new Date().toISOString(),
+          };
+          updatedRows.push(updatedRow);
+          return updatedRow;
+        }
+        return row;
+      });
+
+      saveLocalData(localData);
+      return { data: updatedRows, error: null };
+    }
+
+    if (this.isUpsert) {
+      const rows = Array.isArray(this.dataToInsertOrUpdate)
+        ? this.dataToInsertOrUpdate
+        : [this.dataToInsertOrUpdate];
+      
+      const upsertedRows: any[] = [];
+      for (const row of rows) {
+        let matchIndex = -1;
+
+        if (row.id) {
+          matchIndex = localData.findIndex((d: any) => d.id === row.id);
+        } else if (this.tableName === 'profiles' && row.user_id) {
+          matchIndex = localData.findIndex((d: any) => d.user_id === row.user_id);
+        } else {
+          matchIndex = localData.findIndex((d: any) => {
+            let match = true;
+            if (row.user_id && d.user_id !== row.user_id) match = false;
+            if (row.credential_type && d.credential_type !== row.credential_type) match = false;
+            return match;
+          });
+        }
+
+        if (matchIndex > -1) {
+          const updatedRow = {
+            ...localData[matchIndex],
+            ...row,
+            updated_at: new Date().toISOString(),
+          };
+          localData[matchIndex] = updatedRow;
+          upsertedRows.push(updatedRow);
+        } else {
+          const newRow = {
+            ...row,
+            id: row.id || crypto.randomUUID(),
+            created_at: row.created_at || new Date().toISOString(),
+            updated_at: row.updated_at || new Date().toISOString(),
+          };
+          localData.push(newRow);
+          upsertedRows.push(newRow);
+        }
+      }
+
+      saveLocalData(localData);
+      return { data: Array.isArray(this.dataToInsertOrUpdate) ? upsertedRows : upsertedRows[0], error: null };
+    }
+
+    if (this.isDelete) {
+      const remainingRows = localData.filter((row: any) => {
+        let matches = true;
+        for (const f of this.filters) {
+          const val = row[f.column];
+          if (f.operator === '==' && val !== f.value) matches = false;
+          if (f.operator === '!=' && val === f.value) matches = false;
+          if (f.operator === 'in' && (!Array.isArray(f.value) || !f.value.includes(val))) matches = false;
+        }
+        return !matches;
+      });
+
+      saveLocalData(remainingRows);
+      return { data: null, error: null };
+    }
+
+    // Default GET: Filter, sort and slice data
+    let filteredResults = [...localData];
+    
+    for (const f of this.filters) {
+      filteredResults = filteredResults.filter(row => {
+        const val = row[f.column];
+        if (f.operator === '==') {
+          return val === f.value;
+        }
+        if (f.operator === '!=' && val !== undefined) {
+          return val !== f.value;
+        }
+        if (f.operator === 'in') {
+          return Array.isArray(f.value) && f.value.includes(val);
+        }
+        return true;
+      });
+    }
+
+    if (this.sortOrder) {
+      const { column, ascending } = this.sortOrder;
+      filteredResults.sort((a, b) => {
+        const valA = a[column];
+        const valB = b[column];
+        if (valA === undefined || valA === null) return ascending ? 1 : -1;
+        if (valB === undefined || valB === null) return ascending ? -1 : 1;
+        if (valA < valB) return ascending ? -1 : 1;
+        if (valA > valB) return ascending ? 1 : -1;
+        return 0;
+      });
+    }
+
+    if (this.limitVal !== null) {
+      filteredResults = filteredResults.slice(0, this.limitVal);
+    }
+
+    return { data: filteredResults, error: null };
+  }
+
+  private async execute() {
+    try {
+      return await this.executeFirestore();
+    } catch (err: any) {
+      const isPermissionOrAuthError = 
+        err?.code === 'permission-denied' || 
+        err?.message?.includes('permission') || 
+        err?.message?.includes('unauthorized') ||
+        err?.message?.includes('Missing or insufficient permissions');
+
+      if (isPermissionOrAuthError) {
+        console.warn(`Firestore permission denied on table ${this.tableName}. Falling back to localStorage.`);
+        return await this.executeLocalStorage();
+      }
+      throw err;
+    }
   }
 
   async then(onfulfilled?: (value: any) => any, onrejected?: (reason: any) => any) {
@@ -278,31 +946,41 @@ class FirebaseQueryBuilder {
       const res = await this.execute();
       return onfulfilled ? onfulfilled(res) : res;
     } catch (err: any) {
-      console.error(`Firestore error in table ${this.tableName}:`, err);
+      console.error(`Error executing query in table ${this.tableName}:`, err);
       const errorResult = { data: null, error: err };
       return onfulfilled ? onfulfilled(errorResult) : errorResult;
     }
   }
 
   async maybeSingle() {
-    const res = await this.execute();
-    if (res.error) return { data: null, error: res.error };
-    const data = res.data;
-    if (Array.isArray(data)) {
-      return { data: data.length > 0 ? data[0] : null, error: null };
+    try {
+      const res = await this.execute();
+      if (res.error) return { data: null, error: res.error };
+      const data = res.data;
+      if (Array.isArray(data)) {
+        return { data: data.length > 0 ? data[0] : null, error: null };
+      }
+      return { data, error: null };
+    } catch (err: any) {
+      console.error(`Error in maybeSingle on table ${this.tableName}:`, err);
+      return { data: null, error: err };
     }
-    return { data, error: null };
   }
 
   async single() {
-    const res = await this.execute();
-    if (res.error) return { data: null, error: res.error };
-    const data = res.data;
-    if (Array.isArray(data)) {
-      if (data.length === 0) return { data: null, error: new Error('No rows found') };
-      return { data: data[0], error: null };
+    try {
+      const res = await this.execute();
+      if (res.error) return { data: null, error: res.error };
+      const data = res.data;
+      if (Array.isArray(data)) {
+        if (data.length === 0) return { data: null, error: new Error('No rows found') };
+        return { data: data[0], error: null };
+      }
+      return { data, error: null };
+    } catch (err: any) {
+      console.error(`Error in single on table ${this.tableName}:`, err);
+      return { data: null, error: err };
     }
-    return { data, error: null };
   }
 }
 

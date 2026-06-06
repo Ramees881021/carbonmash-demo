@@ -63,58 +63,63 @@ const DashboardContent = () => {
     const fetchProfile = async () => {
       if (!user) return;
       
-      // Fetch profile and latest emissions year in parallel
-      const [profileRes, emissionsRes] = await Promise.all([
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle(),
-        supabase
-          .from('emissions_data')
-          .select('reporting_year')
-          .eq('user_id', user.id)
-          .order('reporting_year', { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-      ]);
-      
-      // Determine the best default year: latest year with data, or current-1
-      const latestDataYear = emissionsRes.data?.reporting_year ?? null;
-      
-      if (!profileRes.error && profileRes.data) {
-        setProfile(profileRes.data as any);
-        setCurrency(profileRes.data.currency);
-        setBaseYear(profileRes.data.base_year);
-        // Load saved period pattern
-        const p = profileRes.data as any;
-        let pattern: { startMonth: number; startDay: number; endMonth: number; endDay: number } | null = null;
-        if (p.period_start_month && p.period_end_month) {
-          pattern = {
-            startMonth: p.period_start_month,
-            startDay: p.period_start_day || 1,
-            endMonth: p.period_end_month,
-            endDay: p.period_end_day || 31,
-          };
-          setPeriodPattern(pattern);
-        }
+      try {
+        // Fetch profile and latest emissions year in parallel
+        const [profileRes, emissionsRes] = await Promise.all([
+          supabase
+            .from('profiles')
+            .select('*')
+            .eq('user_id', user.id)
+            .maybeSingle(),
+          supabase
+            .from('emissions_data')
+            .select('reporting_year')
+            .eq('user_id', user.id)
+            .order('reporting_year', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+        ]);
         
-        // Set year to latest data year if available
-        if (latestDataYear) {
-          const yearToSet = latestDataYear;
-          if (pattern) {
-            const startYear = pattern.startMonth > pattern.endMonth ? yearToSet - 1 : yearToSet;
-            setReportingPeriodStart(new Date(startYear, pattern.startMonth - 1, pattern.startDay));
-            setReportingPeriodEnd(new Date(yearToSet, pattern.endMonth - 1, pattern.endDay));
+        // Determine the best default year: latest year with data, or current-1
+        const latestDataYear = emissionsRes.data?.reporting_year ?? null;
+        
+        if (!profileRes.error && profileRes.data) {
+          setProfile(profileRes.data as any);
+          setCurrency(profileRes.data.currency);
+          setBaseYear(profileRes.data.base_year);
+          // Load saved period pattern
+          const p = profileRes.data as any;
+          let pattern: { startMonth: number; startDay: number; endMonth: number; endDay: number } | null = null;
+          if (p.period_start_month && p.period_end_month) {
+            pattern = {
+              startMonth: p.period_start_month,
+              startDay: p.period_start_day || 1,
+              endMonth: p.period_end_month,
+              endDay: p.period_end_day || 31,
+            };
+            setPeriodPattern(pattern);
           }
-          setSelectedYear(yearToSet);
-        } else if (pattern) {
-          const startYear = pattern.startMonth > pattern.endMonth ? selectedYear - 1 : selectedYear;
-          setReportingPeriodStart(new Date(startYear, pattern.startMonth - 1, pattern.startDay));
-          setReportingPeriodEnd(new Date(selectedYear, pattern.endMonth - 1, pattern.endDay));
+          
+          // Set year to latest data year if available
+          if (latestDataYear) {
+            const yearToSet = latestDataYear;
+            if (pattern) {
+              const startYear = pattern.startMonth > pattern.endMonth ? yearToSet - 1 : yearToSet;
+              setReportingPeriodStart(new Date(startYear, pattern.startMonth - 1, pattern.startDay));
+              setReportingPeriodEnd(new Date(yearToSet, pattern.endMonth - 1, pattern.endDay));
+            }
+            setSelectedYear(yearToSet);
+          } else if (pattern) {
+            const startYear = pattern.startMonth > pattern.endMonth ? selectedYear - 1 : selectedYear;
+            setReportingPeriodStart(new Date(startYear, pattern.startMonth - 1, pattern.startDay));
+            setReportingPeriodEnd(new Date(selectedYear, pattern.endMonth - 1, pattern.endDay));
+          }
         }
+      } catch (err) {
+        console.error('Error fetching profile in Dashboard:', err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchProfile();
