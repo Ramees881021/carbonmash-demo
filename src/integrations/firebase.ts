@@ -97,24 +97,59 @@ const mapFirebaseUserToSession = (firebaseUser: any): Session | null => {
 
 // Local Storage Seed Data Seeder for Net-Z Platform
 function getLocalStorageSeedData(tableName: string, userId: string): any[] {
+  const adminUserId = 'admin-user-id-rameesraja';
+
   if (tableName === 'user_roles') {
-    return [
+    const roles = [
       {
         id: crypto.randomUUID(),
-        user_id: userId,
+        user_id: adminUserId,
         role: 'admin',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }
     ];
+
+    if (userId !== adminUserId) {
+      roles.push({
+        id: crypto.randomUUID(),
+        user_id: userId,
+        role: 'admin',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+    }
+    return roles;
   }
   
   if (tableName === 'profiles') {
-    return [
+    const list = [
       {
+        id: adminUserId,
+        user_id: adminUserId,
+        company_name: 'Almac Group (Admin)',
+        email: 'rameesraja.kn@gmail.com',
+        industry: 'Pharmaceuticals',
+        company_size: '1000-5000',
+        currency: 'GBP',
+        base_year: 2021,
+        is_approved: true,
+        period_start_month: 1,
+        period_start_day: 1,
+        period_end_month: 12,
+        period_end_day: 31,
+        summary: 'Net-Z Platform Administrator account.',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
+
+    if (userId !== adminUserId) {
+      list.push({
         id: userId,
         user_id: userId,
         company_name: 'Almac Group',
+        email: auth.currentUser?.email || 'user@example.com',
         industry: 'Pharmaceuticals',
         company_size: '1000-5000',
         currency: 'GBP',
@@ -127,8 +162,9 @@ function getLocalStorageSeedData(tableName: string, userId: string): any[] {
         summary: 'Leading pharmaceutical development and manufacturing partner, tracking emissions across all scopes to achieve net-zero target.',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      }
-    ];
+      });
+    }
+    return list;
   }
 
   if (tableName === 'emissions_data') {
