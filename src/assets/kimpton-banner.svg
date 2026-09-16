@@ -1,0 +1,33 @@
+<svg width="1128" height="272" viewBox="0 0 1128 272" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title">
+  <title id="title">Kimpton sustainable building banner</title>
+  <defs>
+    <linearGradient id="site" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d8e0df"/>
+      <stop offset="1" stop-color="#71817e"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8bbd20"/>
+      <stop offset="1" stop-color="#3f871d"/>
+    </linearGradient>
+  </defs>
+  <rect width="1128" height="272" fill="#fff"/>
+  <rect width="307" height="272" fill="url(#site)"/>
+  <path d="M0 214 102 147l70 31 135-115v209H0Z" fill="#536a68" opacity=".72"/>
+  <path d="M0 229 92 171l78 31 137-123v193H0Z" fill="#879690" opacity=".85"/>
+  <path d="M307 0h203L315 272H121Z" fill="url(#green)"/>
+  <path d="M366 0h168L315 272H207Z" fill="#65a522" opacity=".9"/>
+  <path d="M425 0h112L315 272h-74Z" fill="#4f951e" opacity=".8"/>
+  <text x="590" y="84" text-anchor="middle" fill="#777" font-family="Arial, Helvetica, sans-serif" font-size="20">Creating the</text>
+  <text x="590" y="108" text-anchor="middle" fill="#8fae42" font-family="Arial, Helvetica, sans-serif" font-size="20">sustainable building</text>
+  <text x="590" y="132" text-anchor="middle" fill="#777" font-family="Arial, Helvetica, sans-serif" font-size="20">environments of tomorrow</text>
+  <circle cx="787" cy="99" r="30" fill="#7baa21"/>
+  <path d="M787 69c17 0 30 13 30 30 0 10-5 19-13 25 4-6 5-12 2-18-3-9-12-15-21-15-9 0-16 5-20 12 0-20 9-34 22-34Z" fill="#5c8d1e"/>
+  <path d="M787 84c10 0 18 8 18 18 0 9-7 17-16 18 5-3 7-8 7-13 0-8-6-14-14-14-6 0-11 3-14 7 1-10 8-16 19-16Z" fill="#333"/>
+  <path d="M787 88c7 0 12 6 12 12 0 6-4 10-9 12 2-2 3-5 3-8 0-5-4-8-8-8-3 0-6 2-8 4 1-7 5-12 10-12Z" fill="#fff"/>
+  <text x="826" y="113" fill="#111" font-family="Arial, Helvetica, sans-serif" font-size="39" font-weight="300">KIMPTON</text>
+  <path d="M450 272c173-66 400-84 678-72v72Z" fill="#333"/>
+  <text x="660" y="247" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="17">X</text>
+  <text x="687" y="247" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="17">f</text>
+  <text x="712" y="247" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="17">in</text>
+  <text x="758" y="249" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="31">www.kimpton.co.uk</text>
+</svg>

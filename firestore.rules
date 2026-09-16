@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check authentication
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Profiles collection
+    match /profiles/{profileId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // User roles
+    match /user_roles/{roleId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    // Emissions data and calculator records
+    match /{collection}/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+  }
+}
