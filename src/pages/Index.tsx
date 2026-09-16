@@ -94,13 +94,6 @@ const Index = () => {
                 >
                   Sign In
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="register" 
-                  onClick={() => navigate('/auth?tab=signup')}
-                  className="data-[state=active]:bg-background"
-                >
-                  Register
-                </TabsTrigger>
               </TabsList>
             </Tabs>
           )}

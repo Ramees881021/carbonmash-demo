@@ -4,7 +4,6 @@ import { LoginForm } from '@/components/auth/LoginForm';
 import { SignupForm } from '@/components/auth/SignupForm';
 import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm';
 import { AlmacLogo } from '@/components/ui/AlmacLogo';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 type AuthView = 'login' | 'signup' | 'forgot-password';
 
@@ -50,16 +49,6 @@ const Auth = () => {
         <a href="/">
           <AlmacLogo className="h-10" />
         </a>
-        <Tabs value={view} onValueChange={(v) => setView(v as AuthView)} className="w-auto">
-          <TabsList className="bg-muted">
-            <TabsTrigger value="login" className="data-[state=active]:bg-background">
-              Sign In
-            </TabsTrigger>
-            <TabsTrigger value="signup" className="data-[state=active]:bg-background">
-              Register
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
       </header>
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
