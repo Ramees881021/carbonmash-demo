@@ -58,6 +58,13 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
     email: 'amannasar39@gmail.com',
     companyName: 'Net-Z Platform',
     role: 'user'
+  },
+  {
+    id: '77ea7b16-f598-4882-ac78-ce5dbcf7da1c',
+    name: 'CarbonMash Demo',
+    email: 'democc@carbonmash.com',
+    companyName: 'Net-Z Platform',
+    role: 'user'
   }
 ];
 
