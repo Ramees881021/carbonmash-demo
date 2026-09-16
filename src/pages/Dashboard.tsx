@@ -162,7 +162,7 @@ const DashboardContent = () => {
       <div className="flex-1 flex flex-col ml-64">
         {/* Top header bar with logo */}
         <div className="w-full py-3 px-6 flex items-center justify-center border-b bg-card">
-          <CompanyHeaderLogo companyName={profile?.company_name} logoUrl={(profile as any)?.logo_url} className="h-10" />
+          <CompanyHeaderLogo companyName={profile?.company_name} userEmail={user?.email} logoUrl={(profile as any)?.logo_url} className="h-10" />
         </div>
 
         <DashboardHeader />

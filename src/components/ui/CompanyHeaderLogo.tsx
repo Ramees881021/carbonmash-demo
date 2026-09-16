@@ -3,12 +3,15 @@ import kimptonLogo from '@/assets/kimpton-logo.svg';
 
 interface CompanyHeaderLogoProps {
   companyName?: string | null;
+  userEmail?: string | null;
   logoUrl?: string | null;
   className?: string;
 }
 
-export const CompanyHeaderLogo = ({ companyName, logoUrl, className = "h-10" }: CompanyHeaderLogoProps) => {
-  if (logoUrl) {
+export const CompanyHeaderLogo = ({ companyName, userEmail, logoUrl, className = "h-10" }: CompanyHeaderLogoProps) => {
+  const isRameesAccount = userEmail?.toLowerCase() === 'rameesraja.kn@gmail.com';
+
+  if (logoUrl && !isRameesAccount) {
     return (
       <div className={`flex items-center justify-center ${className}`}>
         <img 
@@ -21,7 +24,7 @@ export const CompanyHeaderLogo = ({ companyName, logoUrl, className = "h-10" }: 
     );
   }
 
-  const isKimpton = (companyName || '').toLowerCase().includes('kimpton');
+  const isKimpton = !isRameesAccount && (companyName || '').toLowerCase().includes('kimpton');
 
   if (isKimpton) {
     return (

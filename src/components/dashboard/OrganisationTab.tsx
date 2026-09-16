@@ -256,9 +256,12 @@ export const OrganisationTab = () => {
     );
   }
 
-  const isKimpton = profile?.company_name.toLowerCase().includes('kimpton');
-  const bannerUrl = profile?.banner_url || (isKimpton ? kimptonBanner : defaultBanner);
-  const logoUrl = profile?.logo_url || (isKimpton ? kimptonLogo : null);
+  const isRameesAccount = user?.email?.toLowerCase() === 'rameesraja.kn@gmail.com';
+  const isKimpton = !isRameesAccount && profile?.company_name.toLowerCase().includes('kimpton');
+  const bannerUrl = isRameesAccount
+    ? defaultBanner
+    : profile?.banner_url || (isKimpton ? kimptonBanner : defaultBanner);
+  const logoUrl = isRameesAccount ? null : profile?.logo_url || (isKimpton ? kimptonLogo : null);
 
   return (
     <div className="space-y-6">
