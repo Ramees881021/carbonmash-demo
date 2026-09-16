@@ -107,11 +107,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     created_at: '2024-01-01T00:00:00.000Z'
   });
 
-  const [user, setUser] = useState<User | null>(() => createAccountUser(getInitialAccount()));
-  const [session, setSession] = useState<Session | null>(() => ({
-    user: createAccountUser(getInitialAccount()),
-    access_token: 'demo_token'
-  }));
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
 
   // Initialize master data on start
@@ -151,13 +148,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signIn = async (email: string, _password: string) => {
-    await switchAccount(email);
+    const target = DEMO_ACCOUNTS.find(a => a.email.toLowerCase() === email.toLowerCase());
+    if (!target) {
+      return { error: new Error('No demo account matches this email address.') };
+    }
+
+    localStorage.setItem('active_account_email', target.email);
+    setActiveAccount(target);
+    const newUser = createAccountUser(target);
+    setUser(newUser);
+    setSession({ user: newUser, access_token: 'demo_token' });
+
+    try {
+      await seedUserMasterData(target.id, target.email, target.companyName);
+    } catch (err) {
+      console.warn('Seed error during signIn:', err);
+    }
+
     return { error: null };
   };
 
   const signOut = async () => {
-    // Reset to primary Kimpton account
-    await switchAccount(DEMO_ACCOUNTS[0].email);
+    localStorage.removeItem('active_account_email');
+    setUser(null);
+    setSession(null);
+    setActiveAccount(DEMO_ACCOUNTS[0]);
   };
 
   const resetPassword = async (_email: string) => {
