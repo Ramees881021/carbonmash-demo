@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { SignupForm } from '@/components/auth/SignupForm';
 import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm';
-import carbonmashLogo from '@/assets/carbonmash-logo.webp';
 
 type AuthView = 'login' | 'signup' | 'forgot-password';
 
@@ -23,10 +22,7 @@ const Auth = () => {
   if (view === 'forgot-password') {
     return (
       <div className="min-h-screen flex flex-col bg-white">
-        <header className="w-full px-6 py-4 flex items-center justify-between">
-          <a href="/">
-            <img src={carbonmashLogo} alt="CarbonMash" className="h-10 object-contain" />
-          </a>
+        <header className="w-full px-6 py-4 flex items-center justify-end">
           <button
             onClick={() => setView('login')}
             className="text-sm text-primary hover:underline"
@@ -45,11 +41,6 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <header className="w-full px-6 py-4 flex items-center justify-between">
-        <a href="/">
-          <img src={carbonmashLogo} alt="CarbonMash" className="h-10 object-contain" />
-        </a>
-      </header>
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           {view === 'login' ? (

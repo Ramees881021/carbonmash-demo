@@ -2,7 +2,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlmacLogo } from '@/components/ui/AlmacLogo';
 import { useAdmin } from '@/hooks/useAdmin';
 import { Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -55,11 +54,7 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="animate-pulse">
-          <AlmacLogo className="h-12" />
-        </div>
-      </div>
+      <div className="min-h-screen bg-white" />
     );
   }
 
@@ -69,9 +64,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Header with logo left, tabs right */}
-      <header className="w-full px-6 py-4 flex items-center justify-between">
-        <AlmacLogo className="h-10" />
+      {/* Header with tabs right */}
+      <header className="w-full px-6 py-4 flex items-center justify-end">
         <div className="flex items-center gap-4">
           {user && isAdmin && (
             <Button
