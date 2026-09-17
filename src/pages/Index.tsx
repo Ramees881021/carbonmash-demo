@@ -15,12 +15,6 @@ const Index = () => {
   const fullText = 'Track. Reduce. Zero.';
 
   useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
-    }
-  }, [user, navigate]);
-
-  useEffect(() => {
     if (loading) return;
     
     let currentIndex = 0;
@@ -58,10 +52,6 @@ const Index = () => {
     );
   }
 
-  if (user) {
-    return null;
-  }
-
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header with tabs right */}
@@ -78,19 +68,17 @@ const Index = () => {
               Admin Panel
             </Button>
           )}
-          {!user && (
-            <Tabs defaultValue="signin" className="w-auto">
-              <TabsList className="bg-muted">
-                <TabsTrigger 
-                  value="signin" 
-                  onClick={() => navigate('/auth?tab=login')}
-                  className="data-[state=active]:bg-background"
-                >
-                  Sign In
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          )}
+          <Tabs defaultValue="signin" className="w-auto">
+            <TabsList className="bg-muted">
+              <TabsTrigger 
+                value="signin" 
+                onClick={() => navigate('/auth?tab=login')}
+                className="data-[state=active]:bg-background"
+              >
+                Sign In
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
       </header>
 
