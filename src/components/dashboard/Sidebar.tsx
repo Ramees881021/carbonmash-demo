@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { ModeToggle } from './ModeToggle';
 
+import { canManageUsers } from '@/hooks/useAdmin';
+
 type TabType = 'overview' | 'emissions' | 'carbon-calculator' | 'carbon-calculator-database' | 'carbon-calculator-audit-trail' | 'carbon-calculator-dashboard' | 'scorecard' | 'clients' | 'netzero' | 'carbonbudget' | 'organisation' | 'organisation-documents' | 'reporting' | 'predictive' | 'users';
 
 interface Profile {
@@ -29,6 +31,8 @@ interface SidebarProps {
   profile: Profile | null;
   onProfileUpdate: (profile: Profile) => void;
   isAdmin?: boolean;
+  hasUserManagement?: boolean;
+  isApproved?: boolean;
 }
 interface NavItem {
   id: TabType;
@@ -119,10 +123,14 @@ export const Sidebar = ({
   onTabChange,
   profile,
   onProfileUpdate,
-  isAdmin = false
+  isAdmin = false,
+  hasUserManagement,
+  isApproved = true
 }: SidebarProps) => {
   const {
-    signOut
+    signOut,
+    user,
+    activeAccount
   } = useAuth();
   const {
     baseYear,
@@ -134,6 +142,8 @@ export const Sidebar = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(profile?.company_name || '');
   const [expandedItems, setExpandedItems] = useState<Set<TabType>>(new Set());
+
+  const isUserManagementAllowed = hasUserManagement ?? (canManageUsers(user) || canManageUsers(activeAccount));
 
   // Toggle expansion of a nav item
   const toggleExpand = (id: TabType) => {
@@ -148,10 +158,11 @@ export const Sidebar = ({
     });
   };
 
-  // Filter nav items based on mode and admin status
+  // Filter nav items based on mode, admin status, and user management permission
   const filteredNavItems = navItems.filter((item) => {
     if (isPresenterMode && item.businessOnly) return false;
     if (item.adminOnly && !isAdmin) return false;
+    if (item.id === 'users' && !isUserManagementAllowed) return false;
     return true;
   });
   const handleSaveCompanyName = async () => {
@@ -230,75 +241,86 @@ export const Sidebar = ({
 
       {/* Navigation */}
       <nav className="flex-1 p-4 overflow-y-auto">
-        <ul className="space-y-1">
-          {filteredNavItems.map((item) => {
-          const hasSubItems = item.subItems && item.subItems.length > 0;
-          const filteredSubItems = hasSubItems ? item.subItems?.filter((sub) => {
-            if (isPresenterMode && sub.businessOnly) return false;
-            if (sub.adminOnly && !isAdmin) return false;
-            return true;
-          }) : [];
-          const showSubItems = filteredSubItems && filteredSubItems.length > 0;
-          const isExpanded = expandedItems.has(item.id);
-          const isActive = activeTab === item.id || showSubItems && item.subItems?.some((sub) => activeTab === sub.id);
+        {!isApproved ? (
+          <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-center space-y-2">
+            <div className="text-xs font-semibold text-destructive uppercase tracking-wider">Access Suspended</div>
+            <p className="text-xs text-sidebar-foreground/70 leading-relaxed">
+              This account has been revoked by the administrator. Platform features are unavailable.
+            </p>
+          </div>
+        ) : (
+          <ul className="space-y-1">
+            {filteredNavItems.map((item) => {
+            const hasSubItems = item.subItems && item.subItems.length > 0;
+            const filteredSubItems = hasSubItems ? item.subItems?.filter((sub) => {
+              if (isPresenterMode && sub.businessOnly) return false;
+              if (sub.adminOnly && !isAdmin) return false;
+              if (sub.id === 'users' && !isUserManagementAllowed) return false;
+              return true;
+            }) : [];
+            const showSubItems = filteredSubItems && filteredSubItems.length > 0;
+            const isExpanded = expandedItems.has(item.id);
+            const isActive = activeTab === item.id || showSubItems && item.subItems?.some((sub) => activeTab === sub.id);
 
-          return (
-            <li key={item.id} className="animate-fade-in">
-                <button
-                onClick={() => {
-                  if (showSubItems) {
-                    toggleExpand(item.id);
-                    onTabChange(item.id);
-                  } else {
-                    onTabChange(item.id);
+            return (
+              <li key={item.id} className="animate-fade-in">
+                  <button
+                  onClick={() => {
+                    if (showSubItems) {
+                      toggleExpand(item.id);
+                      onTabChange(item.id);
+                    } else {
+                      onTabChange(item.id);
+                    }
+                  }}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-300",
+                    isActive ? "bg-sidebar-primary text-sidebar-primary-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                  )}>
+
+                    <item.icon className="h-5 w-5" />
+                    <span className="flex-1 text-left">{item.label}</span>
+                    {showSubItems &&
+                  <ChevronDown className={cn(
+                    "h-4 w-4 transition-transform duration-200",
+                    isExpanded && "rotate-180"
+                  )} />
                   }
-                }}
-                className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-300",
-                  isActive ? "bg-sidebar-primary text-sidebar-primary-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                )}>
+                  </button>
+                  
+                  {/* Sub-items */}
+                  {showSubItems && isExpanded &&
+                <ul className="mt-1 ml-4 space-y-1">
+                      {item.subItems?.
+                  filter((subItem) => {
+                    if (isPresenterMode && subItem.businessOnly) return false;
+                    if (subItem.adminOnly && !isAdmin) return false;
+                    if (subItem.id === 'users' && !isUserManagementAllowed) return false;
+                    return true;
+                  }).
+                  map((subItem) =>
+                  <li key={subItem.id}>
+                          <button
+                      onClick={() => onTabChange(subItem.id)}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200",
+                        activeTab === subItem.id ?
+                        "bg-sidebar-accent text-sidebar-foreground font-medium" :
+                        "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}>
 
-                  <item.icon className="h-5 w-5" />
-                  <span className="flex-1 text-left">{item.label}</span>
-                  {showSubItems &&
-                <ChevronDown className={cn(
-                  "h-4 w-4 transition-transform duration-200",
-                  isExpanded && "rotate-180"
-                )} />
+                            <subItem.icon className="h-4 w-4" />
+                            {subItem.label}
+                          </button>
+                        </li>
+                  )}
+                    </ul>
                 }
-                </button>
-                
-                {/* Sub-items */}
-                {showSubItems && isExpanded &&
-              <ul className="mt-1 ml-4 space-y-1">
-                    {item.subItems?.
-                filter((subItem) => {
-                  if (isPresenterMode && subItem.businessOnly) return false;
-                  if (subItem.adminOnly && !isAdmin) return false;
-                  return true;
-                }).
-                map((subItem) =>
-                <li key={subItem.id}>
-                        <button
-                    onClick={() => onTabChange(subItem.id)}
-                    className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200",
-                      activeTab === subItem.id ?
-                      "bg-sidebar-accent text-sidebar-foreground font-medium" :
-                      "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                    )}>
+                </li>);
 
-                          <subItem.icon className="h-4 w-4" />
-                          {subItem.label}
-                        </button>
-                      </li>
-                )}
-                  </ul>
-              }
-              </li>);
-
-        })}
-        </ul>
+          })}
+          </ul>
+        )}
       </nav>
 
       {/* Logout */}

@@ -1,4 +1,4 @@
-import carbonmashLogo from '@/assets/carbonmash-logo.webp';
+import almacLogoSvg from '@/assets/almac-logo.svg';
 
 interface AlmacLogoProps {
   className?: string;
@@ -7,8 +7,8 @@ interface AlmacLogoProps {
 export const AlmacLogo = ({ className = "h-10" }: AlmacLogoProps) => {
   return (
     <img 
-      src={carbonmashLogo} 
-      alt="CarbonMash" 
+      src={almacLogoSvg} 
+      alt="Almac Group" 
       className={className}
     />
   );

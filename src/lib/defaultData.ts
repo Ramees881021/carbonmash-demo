@@ -14,6 +14,9 @@ import {
 export const isKimptonUser = (email?: string | null, companyName?: string | null): boolean => {
   const e = (email || '').toLowerCase();
   const c = (companyName || '').toLowerCase();
+  if (e.includes('ramees') || e.includes('carbonmash') || c.includes('carbonmash') || e.includes('almac') || c.includes('almac')) {
+    return false;
+  }
   return e.includes('kimpton') || c.includes('kimpton') || e.includes('niamh') || e.includes('smith');
 };
 
@@ -43,16 +46,21 @@ export const getAccountMasterData = (userId: string, email?: string | null, comp
     matchedProfile = EXPORTED_PROFILES.find(p => p.user_id === userId);
   }
 
-  // 3. Kimpton checks
-  if (!matchedProfile && (cleanEmail.includes('kimpton') || cleanCompany.includes('kimpton') || cleanEmail.includes('niamh') || cleanEmail.includes('smith'))) {
-    if (cleanEmail.includes('ramees') || cleanCompany.includes('construction')) {
-      matchedProfile = EXPORTED_PROFILES.find(p => p.user_id === '0fe57d1f-2bf8-45ba-86ce-18b139a6b195');
+  // 3. CarbonMash / Ramees checks
+  if (!matchedProfile && (cleanEmail === 'rameesraja.kn@gmail.com' || cleanEmail === 'ramesraja.kn@gmail.com' || cleanEmail.includes('carbonmash') || cleanCompany.includes('carbonmash') || cleanEmail.includes('democc'))) {
+    if (cleanEmail.includes('democc')) {
+      matchedProfile = EXPORTED_PROFILES.find(p => p.user_id === '77ea7b16-f598-4882-ac78-ce5dbcf7da1c');
     } else {
-      matchedProfile = EXPORTED_PROFILES.find(p => p.user_id === '6f7513f5-3613-4c77-a137-c73844e6eb17');
+      matchedProfile = EXPORTED_PROFILES.find(p => p.user_id === '0fe57d1f-2bf8-45ba-86ce-18b139a6b195');
     }
   }
 
-  // 4. Almac checks
+  // 4. Kimpton checks
+  if (!matchedProfile && (cleanEmail.includes('kimpton') || cleanCompany.includes('kimpton') || cleanEmail.includes('niamh') || cleanEmail.includes('smith'))) {
+    matchedProfile = EXPORTED_PROFILES.find(p => p.user_id === '6f7513f5-3613-4c77-a137-c73844e6eb17');
+  }
+
+  // 5. Almac checks
   if (!matchedProfile && (cleanEmail.includes('almac') || cleanCompany.includes('almac'))) {
     if (cleanEmail.includes('admin')) {
       matchedProfile = EXPORTED_PROFILES.find(p => p.user_id === '0735e294-a4c6-4d06-9731-23cc6e69f780');
@@ -63,7 +71,7 @@ export const getAccountMasterData = (userId: string, email?: string | null, comp
     }
   }
 
-  // 5. Default fallback
+  // 6. Default fallback
   if (!matchedProfile) {
     matchedProfile = isKimptonUser(email, companyName)
       ? EXPORTED_PROFILES.find(p => p.user_id === '6f7513f5-3613-4c77-a137-c73844e6eb17')
@@ -76,9 +84,25 @@ export const getAccountMasterData = (userId: string, email?: string | null, comp
 
   const sourceUserId = matchedProfile.user_id;
 
+  // Check custom saved company name / summary in localStorage
+  let customCompanyName: string | null = null;
+  let customSummary: string | null = null;
+  try {
+    if (typeof window !== 'undefined') {
+      customCompanyName = localStorage.getItem(`custom_company_name_${userId}`) ||
+                          localStorage.getItem(`custom_company_name_${cleanEmail}`) ||
+                          (matchedProfile?.id ? localStorage.getItem(`custom_company_name_${matchedProfile.id}`) : null);
+      customSummary = localStorage.getItem(`custom_company_summary_${userId}`) ||
+                      localStorage.getItem(`custom_company_summary_${cleanEmail}`) ||
+                      (matchedProfile?.id ? localStorage.getItem(`custom_company_summary_${matchedProfile.id}`) : null);
+    }
+  } catch {}
+
   // Active user profile
   const profile = {
     ...matchedProfile,
+    company_name: customCompanyName || matchedProfile.company_name,
+    summary: customSummary || matchedProfile.summary,
     id: userId,
     user_id: userId,
     email: email || matchedProfile.email,
@@ -125,7 +149,7 @@ export const getAccountMasterData = (userId: string, email?: string | null, comp
   const sourceRoles = EXPORTED_ROLES.filter(r => r.user_id === sourceUserId);
   const user_roles = sourceRoles.length > 0
     ? sourceRoles.map((r, idx) => ({ ...r, id: `${userId}_role_${idx}`, user_id: userId }))
-    : [{ id: `${userId}_role_admin`, user_id: userId, role: 'admin', created_at: now, updated_at: now }];
+    : [{ id: `${userId}_role_user`, user_id: userId, role: (cleanEmail === 'rameesraja.kn@gmail.com' || userId === '0fe57d1f-2bf8-45ba-86ce-18b139a6b195') ? 'admin' : 'user', created_at: now, updated_at: now }];
 
   // Map calc entries
   const sourceCalc = EXPORTED_CALC_ENTRIES.filter(c => c.user_id === sourceUserId);
@@ -146,7 +170,7 @@ export const getAccountMasterData = (userId: string, email?: string | null, comp
   }));
 
   // Clients & reduction projects
-  const isKimpton = (profile.company_name || '').toLowerCase().includes('kimpton');
+  const isKimpton = !cleanEmail.includes('ramees') && !cleanEmail.includes('carbonmash') && !cleanEmail.includes('almac') && (profile.company_name || '').toLowerCase().includes('kimpton');
   const clientRecords = isKimpton ? [
     { name: 'Pfizer', country: 'United States', revenue: 12000000, apportioned: 1695 },
     { name: 'Roche', country: 'Switzerland', revenue: 9500000, apportioned: 1341 },
@@ -299,7 +323,7 @@ export const getDefaultMasterData = (userId: string, email?: string | null, comp
 };
 
 export const getKimptonMasterData = (userId: string) => {
-  return getAccountMasterData(userId, 'niamh.smith@kimpton.co.uk', 'Kimpton Energy Solutions');
+  return getAccountMasterData(userId, 'niamh.smith@kimpton.co.uk', 'Kimpton');
 };
 
 export const getAlmacMasterData = (userId: string) => {

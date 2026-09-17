@@ -16,17 +16,17 @@ export const EXPORTED_PROFILES = [
   {
     "id": "65738835-9445-4b46-8638-9645a9e9bdb2",
     "user_id": "0fe57d1f-2bf8-45ba-86ce-18b139a6b195",
-    "company_name": "Kimpton",
-    "industry": "Construction",
+    "company_name": "CarbonMash",
+    "industry": "Carbon Management & Clean Tech",
     "company_size": "50-250",
     "created_at": "2026-02-19 11:45:35.766988+00",
     "updated_at": "2026-08-19 12:43:26.283137+00",
     "base_year": 2019,
     "currency": "GBP",
     "organization_id": null,
-    "logo_url": "https://chjfyfmbeqdcbbgixlfo.supabase.co/storage/v1/object/public/organization-assets/0fe57d1f-2bf8-45ba-86ce-18b139a6b195/logo-1787143404150.png",
-    "banner_url": "https://chjfyfmbeqdcbbgixlfo.supabase.co/storage/v1/object/public/organization-assets/0fe57d1f-2bf8-45ba-86ce-18b139a6b195/banner-1787143397863.jfif",
-    "summary": "Kimpton Net-Zero and Carbon Management Platform",
+    "logo_url": null,
+    "banner_url": null,
+    "summary": "CarbonMash Net-Zero and Carbon Management Platform",
     "email": "rameesraja.kn@gmail.com",
     "is_approved": true,
     "period_start_month": 1,
@@ -142,7 +142,7 @@ export const EXPORTED_PROFILES = [
   {
     "id": "29d60249-ee33-4e86-a3bc-fe0d6c9d254b",
     "user_id": "0735e294-a4c6-4d06-9731-23cc6e69f780",
-    "company_name": "Net-Z Platform",
+    "company_name": "Almac Group",
     "industry": "Pharmaceuticals & Biotechnology",
     "company_size": "5,000 - 10,000 employees",
     "created_at": "2026-09-12 05:57:36.627127+00",
@@ -152,7 +152,7 @@ export const EXPORTED_PROFILES = [
     "organization_id": null,
     "logo_url": null,
     "banner_url": null,
-    "summary": "Net-Z Platform Net-Zero and Carbon Management Platform",
+    "summary": "Almac Group Net-Zero and Carbon Management Platform",
     "email": "admin@almacgroup.com",
     "is_approved": true,
     "period_start_month": 1,
@@ -163,7 +163,7 @@ export const EXPORTED_PROFILES = [
   {
     "id": "6f7513f5-3613-4c77-a137-c73844e6eb17",
     "user_id": "6f7513f5-3613-4c77-a137-c73844e6eb17",
-    "company_name": "Kimpton Energy Solutions",
+    "company_name": "Kimpton",
     "industry": "Facilities & Energy Solutions",
     "company_size": "50-250",
     "created_at": "2026-09-12 06:29:44.202777+00",
@@ -173,7 +173,7 @@ export const EXPORTED_PROFILES = [
     "organization_id": null,
     "logo_url": null,
     "banner_url": null,
-    "summary": "Net-Z Platform Net-Zero and Carbon Management Platform",
+    "summary": "Kimpton Net-Zero and Carbon Management Platform",
     "email": "niamh.smith@kimpton.co.uk",
     "is_approved": true,
     "period_start_month": 1,
@@ -184,8 +184,8 @@ export const EXPORTED_PROFILES = [
   {
     "id": "17978c03-a1f9-44c4-a674-b7707b6f4875",
     "user_id": "77ea7b16-f598-4882-ac78-ce5dbcf7da1c",
-    "company_name": "Net-Z Platform",
-    "industry": "Facilities & Energy Solutions",
+    "company_name": "CarbonMash",
+    "industry": "Carbon Management & Clean Tech",
     "company_size": "50-250",
     "created_at": "2026-09-12 07:22:25.987116+00",
     "updated_at": "2026-09-12 07:37:33.629006+00",
@@ -194,7 +194,7 @@ export const EXPORTED_PROFILES = [
     "organization_id": null,
     "logo_url": null,
     "banner_url": null,
-    "summary": "Net-Z Platform Net-Zero and Carbon Management Platform",
+    "summary": "CarbonMash Net-Zero and Carbon Management Platform",
     "email": "democc@carbonmash.com",
     "is_approved": true,
     "period_start_month": 1,
@@ -10837,6 +10837,13 @@ export const EXPORTED_CREDENTIALS = [
   }
 ];
 export const EXPORTED_ROLES = [
+  {
+    "id": "role-niamh-smith-user",
+    "user_id": "6f7513f5-3613-4c77-a137-c73844e6eb17",
+    "role": "user",
+    "created_at": "2026-09-12 06:29:44.202777+00",
+    "updated_at": "2026-09-12 06:29:44.202777+00"
+  },
   {
     "id": "b52f7cc3-f781-4191-839f-aa22c6a6705d",
     "user_id": "0fe57d1f-2bf8-45ba-86ce-18b139a6b195",

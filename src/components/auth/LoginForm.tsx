@@ -25,14 +25,15 @@ export const LoginForm = ({ onSwitchToSignup, onForgotPassword }: LoginFormProps
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await signIn(email, password);
+    const cleanEmail = email.trim();
+    const { error } = await signIn(cleanEmail, password);
 
     if (error) {
       toast.error(error.message);
       setLoading(false);
     } else {
       toast.success('Welcome back!');
-      navigate('/dashboard');
+      window.location.href = '/dashboard';
     }
   };
 
