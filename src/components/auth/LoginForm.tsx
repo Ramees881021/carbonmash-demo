@@ -52,7 +52,7 @@ export const LoginForm = ({ onSwitchToSignup, onForgotPassword }: LoginFormProps
             <Input
               id="email"
               type="email"
-              placeholder="you@almacgroup.com"
+              placeholder="you@company.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required

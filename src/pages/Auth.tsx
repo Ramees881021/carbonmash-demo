@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { SignupForm } from '@/components/auth/SignupForm';
 import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm';
-import { AlmacLogo } from '@/components/ui/AlmacLogo';
+import carbonmashLogo from '@/assets/carbonmash-logo.webp';
 
 type AuthView = 'login' | 'signup' | 'forgot-password';
 
@@ -25,7 +25,7 @@ const Auth = () => {
       <div className="min-h-screen flex flex-col bg-white">
         <header className="w-full px-6 py-4 flex items-center justify-between">
           <a href="/">
-            <AlmacLogo className="h-10" />
+            <img src={carbonmashLogo} alt="CarbonMash" className="h-10 object-contain" />
           </a>
           <button
             onClick={() => setView('login')}
@@ -47,7 +47,7 @@ const Auth = () => {
     <div className="min-h-screen flex flex-col bg-white">
       <header className="w-full px-6 py-4 flex items-center justify-between">
         <a href="/">
-          <AlmacLogo className="h-10" />
+          <img src={carbonmashLogo} alt="CarbonMash" className="h-10 object-contain" />
         </a>
       </header>
       <div className="flex-1 flex items-center justify-center p-4">
