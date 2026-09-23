@@ -163,181 +163,212 @@ export const CarbonCalculatorTab = () => {
       };
       load();
     }, [user, selectedYear]);
+// Helper to clear any local draft state
+const clearDraft = (userId: string, year: number) => {
+  try {
+    localStorage.removeItem(`carbon_calc_draft_${userId}_${year}`);
+  } catch (err) {
+    console.warn('Failed to clear draft:', err);
+  }
+};
+
   const handleSave = async () => {
     if (!user) return;
     setSaving(true);
 
-    // Load existing entries for audit diff
-    const { data: existingEntries } = await supabase
-      .from('carbon_calc_entries')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('reporting_year', selectedYear);
+    try {
+      // Load existing entries for audit diff
+      const { data: existingEntries } = await supabase
+        .from('carbon_calc_entries')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('reporting_year', selectedYear);
 
-    const existingMap = new Map((existingEntries || []).map((e: any) => [e.id, e]));
+      const existingMap = new Map<string, any>((existingEntries || []).map((e: any) => [e.id, e]));
 
-    // Save sites first
-    await supabase.from('sites').delete().eq('user_id', user.id);
-    if (sites.length > 0) {
-      await supabase.from('sites').insert(
-        sites.map(s => ({
-          id: s.id,
-          user_id: user.id,
-          name: s.name,
-          country: s.country,
-          grid_region: s.state,
-          location: s.state ? `${s.state}, ${s.country}` : s.country,
-        }))
-      );
-    }
+      // Save sites first
+      await supabase.from('sites').delete().eq('user_id', user.id);
+      if (sites.length > 0) {
+        await supabase.from('sites').insert(
+          sites.map(s => ({
+            id: s.id,
+            user_id: user.id,
+            name: s.name,
+            country: s.country,
+            grid_region: s.state,
+            location: s.state ? `${s.state}, ${s.country}` : s.country,
+          }))
+        );
+      }
 
-    // Delete existing entries for this year
-    await supabase
-      .from('carbon_calc_entries')
-      .delete()
-      .eq('user_id', user.id)
-      .eq('reporting_year', selectedYear);
+      // Delete existing entries for this year
+      await supabase
+        .from('carbon_calc_entries')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('reporting_year', selectedYear);
 
-    // Build insert rows
-    const rows: any[] = [];
+      // Build insert rows
+      const rows: any[] = [];
 
-    // Scope 1 entries per site
-    Object.entries(scope1BySite).forEach(([siteId, entries]) => {
-      entries.forEach(e => {
+      // Scope 1 entries per site
+      Object.entries(scope1BySite).forEach(([siteId, entries]) => {
+        entries.forEach(e => {
+          rows.push({
+            user_id: user.id,
+            reporting_year: selectedYear,
+            scope: 1,
+            category: e.subCategory,
+            description: e.description,
+            activity_data: { type: e.type, quantity: e.quantity, unit: e.unit },
+            amount_tco2e: e.tco2e,
+            data_quality: 'site_actual',
+            site_id: siteId,
+            emission_factor: e.emissionFactor ?? null,
+            emission_factor_source: e.emissionFactorSource ?? null,
+          });
+        });
+      });
+
+      // Scope 2 entries per site
+      Object.entries(scope2BySite).forEach(([siteId, entries]) => {
+        entries.forEach(e => {
+          rows.push({
+            user_id: user.id,
+            reporting_year: selectedYear,
+            scope: 2,
+            category: e.subCategory,
+            description: e.description,
+            activity_data: { type: e.subCategory, quantity: e.quantity, unit: e.unit, gridRegion: e.gridRegion, method: e.method, renewablePercentage: e.renewablePercentage },
+            amount_tco2e: e.tco2e,
+            data_quality: 'site_actual',
+            site_id: siteId,
+            emission_factor: e.emissionFactor ?? null,
+            emission_factor_source: e.emissionFactorSource ?? null,
+          });
+        });
+      });
+
+      // Scope 3 entries (global or per-site)
+      scope3Entries.forEach(e => {
         rows.push({
           user_id: user.id,
           reporting_year: selectedYear,
-          scope: 1,
-          category: e.subCategory,
+          scope: 3,
+          category: e.categoryCode,
           description: e.description,
           activity_data: { type: e.type, quantity: e.quantity, unit: e.unit },
           amount_tco2e: e.tco2e,
-          data_quality: 'site_actual',
-          site_id: siteId,
+          data_quality: e.siteId ? 'site_actual' : 'estimated',
+          site_id: e.siteId || null,
           emission_factor: e.emissionFactor ?? null,
           emission_factor_source: e.emissionFactorSource ?? null,
         });
       });
-    });
 
-    // Scope 2 entries per site
-    Object.entries(scope2BySite).forEach(([siteId, entries]) => {
-      entries.forEach(e => {
-        rows.push({
-          user_id: user.id,
-          reporting_year: selectedYear,
-          scope: 2,
-          category: e.subCategory,
-          description: e.description,
-          activity_data: { type: e.subCategory, quantity: e.quantity, unit: e.unit, gridRegion: e.gridRegion, method: e.method, renewablePercentage: e.renewablePercentage },
-          amount_tco2e: e.tco2e,
-          data_quality: 'site_actual',
-          site_id: siteId,
-          emission_factor: e.emissionFactor ?? null,
-          emission_factor_source: e.emissionFactorSource ?? null,
-        });
-      });
-    });
+      if (rows.length > 0) {
+        const { error, data: insertedData } = await supabase.from('carbon_calc_entries').insert(rows).select();
+        if (error) {
+          toast.error('Failed to save calculator data');
+          console.error(error);
+        } else {
+          clearDraft(user.id, selectedYear);
+          toast.success(`Saved ${rows.length} entries for ${selectedYear}`);
 
-    // Scope 3 entries (global or per-site)
-    scope3Entries.forEach(e => {
-      rows.push({
-        user_id: user.id,
-        reporting_year: selectedYear,
-        scope: 3,
-        category: e.categoryCode,
-        description: e.description,
-        activity_data: { type: e.type, quantity: e.quantity, unit: e.unit },
-        amount_tco2e: e.tco2e,
-        data_quality: e.siteId ? 'site_actual' : 'estimated',
-        site_id: e.siteId || null,
-        emission_factor: e.emissionFactor ?? null,
-        emission_factor_source: e.emissionFactorSource ?? null,
-      });
-    });
+          // Write audit log entries
+          const auditRows: any[] = [];
 
-    if (rows.length > 0) {
-      const { error, data: insertedData } = await supabase.from('carbon_calc_entries').insert(rows).select();
-      if (error) {
-        toast.error('Failed to save calculator data');
-        console.error(error);
-      } else {
-        clearDraft(user.id, selectedYear);
-        toast.success(`Saved ${rows.length} entries for ${selectedYear}`);
-
-        // Write audit log entries
-        const auditRows: any[] = [];
-
-        // Log deletions (entries that existed before but are gone now)
-        existingMap.forEach((oldEntry, oldId) => {
-          auditRows.push({
-            user_id: user.id,
-            entry_id: oldId,
-            action: 'delete',
-            old_values: { scope: oldEntry.scope, category: oldEntry.category, amount_tco2e: oldEntry.amount_tco2e, description: oldEntry.description },
-            new_values: null,
+          // Log deletions (entries that existed before but are gone now)
+          existingMap.forEach((oldEntry: any, oldId: string) => {
+            auditRows.push({
+              user_id: user.id,
+              entry_id: oldId,
+              action: 'delete',
+              old_values: { scope: oldEntry?.scope, category: oldEntry?.category, amount_tco2e: oldEntry?.amount_tco2e, description: oldEntry?.description },
+              new_values: null,
+            });
           });
-        });
 
-        // Log creates for all new entries
-        (insertedData || []).forEach((newEntry: any) => {
-          auditRows.push({
-            user_id: user.id,
-            entry_id: newEntry.id,
-            action: 'create',
-            old_values: null,
-            new_values: { scope: newEntry.scope, category: newEntry.category, amount_tco2e: newEntry.amount_tco2e, description: newEntry.description },
+          // Log creates for all new entries
+          const insertedList = Array.isArray(insertedData)
+            ? insertedData
+            : insertedData
+              ? [insertedData]
+              : [];
+
+          insertedList.forEach((newEntry: any) => {
+            auditRows.push({
+              user_id: user.id,
+              entry_id: newEntry?.id,
+              action: 'create',
+              old_values: null,
+              new_values: { scope: newEntry?.scope, category: newEntry?.category, amount_tco2e: newEntry?.amount_tco2e, description: newEntry?.description },
+            });
           });
-        });
 
-        if (auditRows.length > 0) {
-          await supabase.from('carbon_audit_log').insert(auditRows);
+          if (auditRows.length > 0) {
+            try {
+              await supabase.from('carbon_audit_log').insert(auditRows);
+            } catch (auditErr) {
+              console.warn('Failed to insert audit log entries:', auditErr);
+            }
+          }
+
+          // Sync calculated totals to emissions_data table for this reporting year
+          try {
+            const allScope1Rows = Object.values(scope1BySite).flat();
+            const allScope2Rows = Object.values(scope2BySite).flat();
+            const scope1Total = allScope1Rows.reduce((s, e) => s + (Number(e.tco2e) || 0), 0);
+            const scope2Total = allScope2Rows.reduce((s, e) => s + (Number(e.tco2e) || 0), 0);
+            const scope3Total = scope3Entries.reduce((s, e) => s + (Number(e.tco2e) || 0), 0);
+
+            const { data: existingEmission } = await supabase
+              .from('emissions_data')
+              .select('*')
+              .eq('user_id', user.id)
+              .eq('reporting_year', selectedYear)
+              .maybeSingle();
+
+            const emissionPayload = {
+              ...(existingEmission || {}),
+              id: existingEmission?.id || `${user.id}_emissions_${selectedYear}`,
+              user_id: user.id,
+              reporting_year: selectedYear,
+              scope_1_emissions: scope1Total,
+              scope_2_emissions: scope2Total,
+              scope_3_emissions: scope3Total,
+              updated_at: new Date().toISOString()
+            };
+
+            await supabase.from('emissions_data').upsert(emissionPayload);
+          } catch (syncErr) {
+            console.warn('Failed to sync calculated totals to emissions_data:', syncErr);
+          }
         }
-
-        // Sync calculated totals to emissions_data table for this reporting year
-        const allScope1Rows = Object.values(scope1BySite).flat();
-        const allScope2Rows = Object.values(scope2BySite).flat();
-        const scope1Total = allScope1Rows.reduce((s, e) => s + (Number(e.tco2e) || 0), 0);
-        const scope2Total = allScope2Rows.reduce((s, e) => s + (Number(e.tco2e) || 0), 0);
-        const scope3Total = scope3Entries.reduce((s, e) => s + (Number(e.tco2e) || 0), 0);
-
-        const { data: existingEmission } = await supabase
-          .from('emissions_data')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('reporting_year', selectedYear)
-          .maybeSingle();
-
-        const emissionPayload = {
-          ...(existingEmission || {}),
-          id: existingEmission?.id || `${user.id}_emissions_${selectedYear}`,
-          user_id: user.id,
-          reporting_year: selectedYear,
-          scope_1_emissions: scope1Total,
-          scope_2_emissions: scope2Total,
-          scope_3_emissions: scope3Total,
-          updated_at: new Date().toISOString()
-        };
-
-        await supabase.from('emissions_data').upsert(emissionPayload);
+      } else {
+        toast.success(existingMap.size > 0 ? 'All entries cleared' : 'Sites saved successfully');
+        // Log all deletions
+        if (existingMap.size > 0) {
+          try {
+            const deleteAuditRows = Array.from(existingMap.entries()).map(([oldId, oldEntry]) => ({
+              user_id: user.id,
+              entry_id: oldId,
+              action: 'delete',
+              old_values: { scope: (oldEntry as any)?.scope, category: (oldEntry as any)?.category, amount_tco2e: (oldEntry as any)?.amount_tco2e },
+              new_values: null,
+            }));
+            await supabase.from('carbon_audit_log').insert(deleteAuditRows);
+          } catch (delAuditErr) {
+            console.warn('Failed to record deletion audit log:', delAuditErr);
+          }
+        }
       }
-    } else {
-      toast.success(existingMap.size > 0 ? 'All entries cleared' : 'Sites saved successfully');
-      // Log all deletions
-      if (existingMap.size > 0) {
-        const deleteAuditRows = Array.from(existingMap.entries()).map(([oldId, oldEntry]) => ({
-          user_id: user.id,
-          entry_id: oldId,
-          action: 'delete',
-          old_values: { scope: (oldEntry as any).scope, category: (oldEntry as any).category, amount_tco2e: (oldEntry as any).amount_tco2e },
-          new_values: null,
-        }));
-        await supabase.from('carbon_audit_log').insert(deleteAuditRows);
-
-      }
+    } catch (err) {
+      console.error('Error saving calculator data:', err);
+      toast.error('Failed to save calculator data');
+    } finally {
+      setSaving(false);
     }
-
-    setSaving(false);
   };
 
   // Compute totals across all sites
