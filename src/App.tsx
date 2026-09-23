@@ -22,10 +22,10 @@ const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Index />} />
+        <Route path="/" element={<Navigate to="/auth?tab=login" replace />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/dashboard" element={<ProtectedDashboard />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/auth?tab=login" replace />} />
       </Routes>
     </BrowserRouter>
   );
