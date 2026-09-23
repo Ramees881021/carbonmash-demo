@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/firebase/client';
 import { MASTER_ACCOUNT_ID } from '@/hooks/useAdmin';
 
 /**
@@ -17,25 +17,12 @@ export const useMasterDataCopy = (userId: string | undefined) => {
       return;
     }
 
-    const storageKey = `master_data_copied_${userId}`;
-    if (localStorage.getItem(storageKey) === 'true') {
-      setReady(true);
-      return;
-    }
     if (running.current) return;
     running.current = true;
 
     const copyIfNeeded = async () => {
       try {
-        console.log('Calling copy-master-data edge function for user:', userId);
-        const { data, error } = await supabase.functions.invoke('copy-master-data');
-        
-        if (error) {
-          console.error('Edge function error:', error);
-        } else {
-          console.log('Copy master data result:', data);
-          localStorage.setItem(storageKey, 'true');
-        }
+        await supabase.functions.invoke('copy-master-data');
       } catch (err) {
         console.error('Error copying master data:', err);
       } finally {

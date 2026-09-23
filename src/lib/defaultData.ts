@@ -84,25 +84,11 @@ export const getAccountMasterData = (userId: string, email?: string | null, comp
 
   const sourceUserId = matchedProfile.user_id;
 
-  // Check custom saved company name / summary in localStorage
-  let customCompanyName: string | null = null;
-  let customSummary: string | null = null;
-  try {
-    if (typeof window !== 'undefined') {
-      customCompanyName = localStorage.getItem(`custom_company_name_${userId}`) ||
-                          localStorage.getItem(`custom_company_name_${cleanEmail}`) ||
-                          (matchedProfile?.id ? localStorage.getItem(`custom_company_name_${matchedProfile.id}`) : null);
-      customSummary = localStorage.getItem(`custom_company_summary_${userId}`) ||
-                      localStorage.getItem(`custom_company_summary_${cleanEmail}`) ||
-                      (matchedProfile?.id ? localStorage.getItem(`custom_company_summary_${matchedProfile.id}`) : null);
-    }
-  } catch {}
-
   // Active user profile
   const profile = {
     ...matchedProfile,
-    company_name: customCompanyName || matchedProfile.company_name,
-    summary: customSummary || matchedProfile.summary,
+    company_name: matchedProfile.company_name,
+    summary: matchedProfile.summary,
     id: userId,
     user_id: userId,
     email: email || matchedProfile.email,

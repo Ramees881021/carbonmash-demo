@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDashboard } from '@/contexts/DashboardContext';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/firebase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -196,27 +196,22 @@ export const EmissionsTab = () => {
       scope3_breakdown: breakdownPayload,
     };
 
-    let error;
-    if (existingId) {
-      ({ error } = await supabase.from('emissions_data').update(payload).eq('id', existingId));
-    } else {
-      ({ error } = await supabase.from('emissions_data').insert(payload));
-    }
+    const emissionId = existingId || `${user.id}_emissions_${selectedYear}`;
+    const fullPayload = {
+      ...payload,
+      id: emissionId,
+      updated_at: new Date().toISOString()
+    };
+
+    const { error, data: resData } = await supabase.from('emissions_data').upsert(fullPayload).select().single();
 
     if (error) {
+      console.error('Error saving emissions data:', error);
       toast.error('Failed to save data');
     } else {
       toast.success('Data saved successfully');
       setIsDirty(false);
-      if (!existingId) {
-        const { data } = await supabase
-          .from('emissions_data')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('reporting_year', selectedYear)
-          .maybeSingle();
-        if (data) setExistingId(data.id);
-      }
+      setExistingId(resData?.id || emissionId);
     }
     setSaving(false);
   };

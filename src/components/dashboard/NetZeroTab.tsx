@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDashboard } from '@/contexts/DashboardContext';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/firebase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -87,30 +87,26 @@ export const NetZeroTab = () => {
 
     setSaving(true);
 
+    const targetId = target?.id || `${user.id}_target_0`;
     const payload = {
+      id: targetId,
       user_id: user.id,
       base_year: formData.base_year,
       near_term_target_year: formData.near_term_target_year,
       netzero_target_year: formData.netzero_target_year,
       scope_1_2_reduction_percent: formData.scope_1_2_reduction_percent,
       scope_3_reduction_percent: formData.scope_3_reduction_percent,
+      updated_at: new Date().toISOString()
     };
 
-    let error;
-    if (target) {
-      ({ error } = await supabase.from('netzero_targets').update(payload).eq('id', target.id));
-    } else {
-      ({ error } = await supabase.from('netzero_targets').insert(payload));
-    }
+    const { error, data } = await supabase.from('netzero_targets').upsert(payload).select().single();
 
     if (error) {
       toast.error('Failed to save targets');
     } else {
       toast.success('Net-Zero targets saved');
       setIsDirty(false);
-      // Refetch to get the new target ID if created
-      const { data } = await supabase.from('netzero_targets').select('*').eq('user_id', user.id).maybeSingle();
-      if (data) setTarget(data);
+      setTarget(data || payload);
     }
     setSaving(false);
   };

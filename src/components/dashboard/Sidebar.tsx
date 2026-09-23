@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDashboard } from '@/contexts/DashboardContext';
 import { useMode } from '@/contexts/ModeContext';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/firebase/client';
 import { LayoutDashboard, BarChart3, Award, Users, Target, LogOut, Pencil, Check, X, Calendar, Wallet, Building2, ClipboardCheck, BrainCircuit, UsersRound, ChevronDown, FolderOpen, Calculator, Database, History, PieChart } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

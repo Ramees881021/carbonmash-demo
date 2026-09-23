@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Zap, Flame, Plus, Info, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/firebase/client';
 import { FUEL_TYPES, VEHICLE_TYPES, SPEND_FACTORS } from '@/lib/emission-factors';
 import type { Scope1Entry } from './Scope1Form';
 import type { Scope2Entry } from './Scope2Form';

@@ -8,7 +8,7 @@ import { Plus, Trash2, Plane, Users, ShoppingCart, Package, Globe, MapPin, Penci
 import * as XLSX from 'xlsx';
 import { FLIGHT_FACTORS, COMMUTE_MODES, SPEND_FACTORS, SCOPE3_CATEGORIES, HOTEL_FACTORS, HOTEL_COUNTRY_FACTORS } from '@/lib/emission-factors';
 import { COUNTRIES } from '@/lib/country-emission-factors';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/firebase/client';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import type { Site } from './SiteManager';

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMode } from '@/contexts/ModeContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/firebase/client';
 import { Presentation, Briefcase, Lock, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {

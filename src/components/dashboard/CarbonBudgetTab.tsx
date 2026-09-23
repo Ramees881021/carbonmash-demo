@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDashboard } from '@/contexts/DashboardContext';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/firebase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -136,34 +136,27 @@ export const CarbonBudgetTab = () => {
     
     setSaving(true);
     
+    const budgetId = existingBudget?.id || `${user.id}_budget_0`;
     const budgetData = {
+      id: budgetId,
       user_id: user.id,
       scope_1_carbon_cost: formData.scope_1_carbon_cost ? parseFloat(formData.scope_1_carbon_cost) : null,
       scope_2_carbon_cost: formData.scope_2_carbon_cost ? parseFloat(formData.scope_2_carbon_cost) : null,
       scope_3_carbon_cost: formData.scope_3_carbon_cost ? parseFloat(formData.scope_3_carbon_cost) : null,
-      discount_rate: formData.discount_rate ? parseFloat(formData.discount_rate) : 5
+      discount_rate: formData.discount_rate ? parseFloat(formData.discount_rate) : 5,
+      updated_at: new Date().toISOString()
     };
     
-    let result;
-    if (existingBudget) {
-      result = await supabase
-        .from('carbon_budgets')
-        .update(budgetData)
-        .eq('id', existingBudget.id)
-        .select()
-        .single();
-    } else {
-      result = await supabase
-        .from('carbon_budgets')
-        .insert(budgetData)
-        .select()
-        .single();
-    }
+    const result = await supabase
+      .from('carbon_budgets')
+      .upsert(budgetData)
+      .select()
+      .single();
     
     if (result.error) {
       toast.error('Failed to save carbon budget data');
     } else {
-      setExistingBudget(result.data);
+      setExistingBudget(result.data || budgetData);
       setIsDirty(false);
       toast.success('Carbon budget data saved successfully');
     }

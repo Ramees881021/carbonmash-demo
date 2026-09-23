@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/firebase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -82,39 +82,24 @@ export const OrganisationTab = () => {
     const isAlmac = (user.email || '').toLowerCase().includes('almac');
     const defaultCompanyName = isRamees ? 'CarbonMash' : (isAlmac ? ((user.email || '').toLowerCase().includes('user') ? 'Almac Group User' : 'Almac Group') : 'Kimpton');
 
-    const baseProfile = profileResult.data || {
+    const baseProfile: Profile = profileResult.data ? {
+      id: profileResult.data.id || user.id,
+      company_name: profileResult.data.company_name || defaultCompanyName,
+      logo_url: profileResult.data.logo_url || null,
+      banner_url: profileResult.data.banner_url || null,
+      summary: profileResult.data.summary || `${defaultCompanyName} Net-Zero and Carbon Management Platform`
+    } : {
       id: user.id,
-      user_id: user.id,
       company_name: defaultCompanyName,
       logo_url: null,
       banner_url: null,
       summary: `${defaultCompanyName} Net-Zero and Carbon Management Platform`
     };
 
-    const savedName = localStorage.getItem(`custom_company_name_${user.id}`) ||
-                      (user.email ? localStorage.getItem(`custom_company_name_${user.email.toLowerCase()}`) : null) ||
-                      localStorage.getItem(`custom_company_name_${baseProfile.id}`);
-    const savedSummary = localStorage.getItem(`custom_company_summary_${user.id}`) ||
-                         (user.email ? localStorage.getItem(`custom_company_summary_${user.email.toLowerCase()}`) : null) ||
-                         localStorage.getItem(`custom_company_summary_${baseProfile.id}`);
-
-    // If isRamees and baseProfile.company_name is Kimpton (from any stale data), override to CarbonMash
-    let initialName = baseProfile.company_name;
-    if (isRamees && (initialName.toLowerCase().includes('kimpton') || initialName.toLowerCase().includes('net-z'))) {
-      initialName = 'CarbonMash';
-    }
-
-    const resolvedName = savedName || initialName;
-    const resolvedSummary = savedSummary !== null && savedSummary !== undefined ? savedSummary : (baseProfile.summary || '');
-
-    const finalProfile = {
-      ...baseProfile,
-      company_name: resolvedName,
-      summary: resolvedSummary
-    };
+    const finalProfile = { ...baseProfile };
     setProfile(finalProfile);
-    setEditedName(resolvedName);
-    setEditedSummary(resolvedSummary);
+    setEditedName(finalProfile.company_name);
+    setEditedSummary(finalProfile.summary || '');
 
     if (credentialsResult.data) {
       // Merge logos from credential_type_logos table
@@ -163,19 +148,18 @@ export const OrganisationTab = () => {
         .getPublicUrl(fileName).data.publicUrl;
 
       const updateField = type === 'logo' ? 'logo_url' : 'banner_url';
-      await supabase
-        .from('profiles')
-        .update({ [updateField]: publicUrl })
-        .eq('id', profile.id);
+      const updatedProfile = {
+        ...profile,
+        id: profile.id || user.id,
+        user_id: user.id,
+        [updateField]: publicUrl,
+        email: user.email || null,
+        updated_at: new Date().toISOString()
+      };
 
-      if (user.id !== profile.id) {
-        await supabase
-          .from('profiles')
-          .update({ [updateField]: publicUrl })
-          .eq('user_id', user.id);
-      }
+      await supabase.from('profiles').upsert(updatedProfile);
 
-      setProfile({ ...profile, [updateField]: publicUrl });
+      setProfile(updatedProfile);
       toast.success(`${type === 'logo' ? 'Logo' : 'Banner'} updated successfully`);
     } catch (error) {
       console.error('Upload error:', error);
@@ -186,50 +170,28 @@ export const OrganisationTab = () => {
   };
 
   const handleSaveName = async () => {
-    if (!profile || !editedName.trim() || !user) return;
+    if (!editedName.trim() || !user) return;
     const newName = editedName.trim();
 
     try {
-      // 1. Save in localStorage for immediate persistence across all queries & reloads
-      localStorage.setItem(`custom_company_name_${user.id}`, newName);
-      if (user.email) {
-        localStorage.setItem(`custom_company_name_${user.email.toLowerCase()}`, newName);
-      }
-      if (profile.id) {
-        localStorage.setItem(`custom_company_name_${profile.id}`, newName);
-      }
+      const updatedProfile: Profile = {
+        id: profile?.id || user.id,
+        user_id: user.id,
+        company_name: newName,
+        logo_url: profile?.logo_url || null,
+        banner_url: profile?.banner_url || null,
+        summary: profile?.summary || null,
+        email: user.email || (profile as any)?.email || null,
+        updated_at: new Date().toISOString()
+      } as any;
 
-      // 2. Direct update to localStorage cache
-      const raw = localStorage.getItem('carbonmash_data_profiles');
-      if (raw) {
-        const list = JSON.parse(raw);
-        const updated = list.map((p: any) => {
-          if (p.id === profile.id || p.user_id === user.id || (user.email && p.email?.toLowerCase() === user.email.toLowerCase())) {
-            return { ...p, company_name: newName, updated_at: new Date().toISOString() };
-          }
-          return p;
-        });
-        localStorage.setItem('carbonmash_data_profiles', JSON.stringify(updated));
-      }
+      await supabase.from('profiles').upsert(updatedProfile);
 
-      // 3. Database updates
-      await supabase
-        .from('profiles')
-        .update({ company_name: newName })
-        .eq('id', profile.id);
-
-      if (user.id !== profile.id) {
-        await supabase
-          .from('profiles')
-          .update({ company_name: newName })
-          .eq('user_id', user.id);
-      }
-
-      setProfile({ ...profile, company_name: newName });
+      setProfile(updatedProfile);
       toast.success('Company name updated');
       setIsEditingName(false);
 
-      // 4. Notify all components
+      // Notify all components
       window.dispatchEvent(new CustomEvent('company-name-updated', {
         detail: { company_name: newName, userId: user.id, email: user.email }
       }));
@@ -240,46 +202,24 @@ export const OrganisationTab = () => {
   };
 
   const handleSaveSummary = async () => {
-    if (!profile || !user) return;
+    if (!user) return;
     const newSummary = editedSummary.trim();
 
     try {
-      // 1. Save in localStorage
-      localStorage.setItem(`custom_company_summary_${user.id}`, newSummary);
-      if (user.email) {
-        localStorage.setItem(`custom_company_summary_${user.email.toLowerCase()}`, newSummary);
-      }
-      if (profile.id) {
-        localStorage.setItem(`custom_company_summary_${profile.id}`, newSummary);
-      }
+      const updatedProfile: Profile = {
+        id: profile?.id || user.id,
+        user_id: user.id,
+        company_name: profile?.company_name || 'Your Company',
+        logo_url: profile?.logo_url || null,
+        banner_url: profile?.banner_url || null,
+        summary: newSummary || null,
+        email: user.email || (profile as any)?.email || null,
+        updated_at: new Date().toISOString()
+      } as any;
 
-      // 2. Direct update to localStorage cache
-      const raw = localStorage.getItem('carbonmash_data_profiles');
-      if (raw) {
-        const list = JSON.parse(raw);
-        const updated = list.map((p: any) => {
-          if (p.id === profile.id || p.user_id === user.id || (user.email && p.email?.toLowerCase() === user.email.toLowerCase())) {
-            return { ...p, summary: newSummary || null, updated_at: new Date().toISOString() };
-          }
-          return p;
-        });
-        localStorage.setItem('carbonmash_data_profiles', JSON.stringify(updated));
-      }
+      await supabase.from('profiles').upsert(updatedProfile);
 
-      // 3. Database updates
-      await supabase
-        .from('profiles')
-        .update({ summary: newSummary || null })
-        .eq('id', profile.id);
-
-      if (user.id !== profile.id) {
-        await supabase
-          .from('profiles')
-          .update({ summary: newSummary || null })
-          .eq('user_id', user.id);
-      }
-
-      setProfile({ ...profile, summary: newSummary || null });
+      setProfile(updatedProfile);
       toast.success('Summary updated');
       setIsEditingSummary(false);
 
@@ -366,12 +306,9 @@ export const OrganisationTab = () => {
     );
   }
 
-  const isRameesAccount = (user?.email || '').toLowerCase().includes('ramees') || (user?.email || '').toLowerCase().includes('carbonmash');
-  const isKimpton = !isRameesAccount && (profile?.company_name || '').toLowerCase().includes('kimpton');
-  const bannerUrl = isRameesAccount
-    ? defaultBanner
-    : profile?.banner_url || (isKimpton ? kimptonBanner : defaultBanner);
-  const logoUrl = isRameesAccount ? null : profile?.logo_url || (isKimpton ? kimptonLogo : null);
+  const isKimpton = (profile?.company_name || '').toLowerCase().includes('kimpton');
+  const bannerUrl = profile?.banner_url || (isKimpton ? kimptonBanner : defaultBanner);
+  const logoUrl = profile?.logo_url || (isKimpton ? kimptonLogo : null);
 
   return (
     <div className="space-y-6">

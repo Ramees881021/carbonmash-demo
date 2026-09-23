@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
 import * as XLSX from 'xlsx';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/firebase/client';
 import { toast } from 'sonner';
 import { SCOPE3_CATEGORIES } from '@/lib/emission-factors';
 
 export const CDP_SCORES = ['A', 'A-', 'B', 'B-', 'C', 'C-', 'D', 'D-', 'Not Rated'];
-export const SBTI_STATUSES = ['Committed', 'Targets Set', 'Near-term Targets', 'Long-term Targets', 'None'];
+export const SBTI_STATUSES = ['Committed', 'Approved', 'Targets Set', 'Near-term Targets', 'Long-term Targets', 'None'];
 const SCOPE3_STATUS_OPTIONS = ['Calculated', 'Not Applicable', 'Not Calculated'];
 
 interface EmissionsRow {
@@ -198,9 +198,12 @@ export const useEmissionsBulkOperations = (userId: string | undefined, currencyS
               return;
             }
 
-            const sbtiStatus = row['SBTi Status']?.toString().trim() || null;
-            if (sbtiStatus && !SBTI_STATUSES.includes(sbtiStatus)) {
-              errors.push(`Row ${index + 2}: Invalid SBTi Status "${sbtiStatus}"`);
+            const rawSbtiStatus = row['SBTi Status']?.toString().trim() || '';
+            const sbtiStatus = rawSbtiStatus
+              ? SBTI_STATUSES.find(status => status.toLowerCase() === rawSbtiStatus.toLowerCase()) || null
+              : null;
+            if (rawSbtiStatus && !sbtiStatus) {
+              errors.push(`Row ${index + 2}: Invalid SBTi Status "${rawSbtiStatus}"`);
               return;
             }
 

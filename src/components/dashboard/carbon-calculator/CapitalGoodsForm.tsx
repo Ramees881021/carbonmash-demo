@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Package, Globe, MapPin, CheckCircle, Circle, Upload, Download, FileSpreadsheet, X, Check, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/firebase/client';
 import type { Scope3Entry } from './Scope3Form';
 import type { Site } from './SiteManager';
 

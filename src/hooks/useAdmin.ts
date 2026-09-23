@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/firebase/client';
 
 // Master account user ID & email
 export const MASTER_ACCOUNT_ID = '0fe57d1f-2bf8-45ba-86ce-18b139a6b195';
@@ -17,28 +17,14 @@ export const canManageUsers = (user: { email?: string | null; id?: string } | nu
 };
 
 export const getAccountApprovalOverrides = (): Record<string, boolean> => {
-  try {
-    const raw = localStorage.getItem(APPROVALS_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
+  return {};
 };
 
 export const setAccountApproval = (
-  userId: string,
-  email: string | null | undefined,
-  isApproved: boolean
-) => {
-  try {
-    const overrides = getAccountApprovalOverrides();
-    if (userId) overrides[userId] = isApproved;
-    if (email) overrides[email.trim().toLowerCase()] = isApproved;
-    localStorage.setItem(APPROVALS_STORAGE_KEY, JSON.stringify(overrides));
-  } catch (e) {
-    console.warn('Could not save approval override:', e);
-  }
-};
+  _userId: string,
+  _email: string | null | undefined,
+  _isApproved: boolean
+) => {};
 
 export const isAccountApproved = (
   user: { id?: string; email?: string | null } | null | undefined,
@@ -47,14 +33,6 @@ export const isAccountApproved = (
   if (!user) return false;
   // Master account is always approved
   if (canManageUsers(user)) return true;
-
-  const overrides = getAccountApprovalOverrides();
-  if (user.email && overrides[user.email.trim().toLowerCase()] !== undefined) {
-    return overrides[user.email.trim().toLowerCase()];
-  }
-  if (user.id && overrides[user.id] !== undefined) {
-    return overrides[user.id];
-  }
   return defaultApproved;
 };
 

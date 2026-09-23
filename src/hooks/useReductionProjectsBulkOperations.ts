@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import * as XLSX from 'xlsx';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/firebase/client';
 import { toast } from 'sonner';
 
 const VALID_SCOPE_TYPES = ['scope_1_2', 'scope_3'] as const;

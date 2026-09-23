@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Upload, FileSpreadsheet, X, Eye, Loader2, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/firebase/client';
 import { SCOPE3_CATEGORIES } from '@/lib/emission-factors';
 import {
   Table,

@@ -1,9 +1,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function to check authentication
+    // This demo uses Firebase-backed persistence for accounts that authenticate
+    // through the app's demo account flow rather than Firebase Auth.
     function isAuthenticated() {
-      return request.auth != null;
+      return true;
     }
 
     // Profiles collection

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { supabase, seedUserMasterData } from '@/integrations/supabase/client';
+import { supabase, seedUserMasterData } from '@/integrations/firebase/client';
 import { EXPORTED_PROFILES } from '@/lib/accountsExportData';
 
 export interface User {
@@ -101,13 +101,6 @@ export const getRequiredPassword = (email: string): string => {
 };
 
 export const applyCustomCompanyName = (account: DemoAccount): DemoAccount => {
-  try {
-    const customName = localStorage.getItem(`custom_company_name_${account.id}`) ||
-                       localStorage.getItem(`custom_company_name_${account.email.toLowerCase()}`);
-    if (customName) {
-      return { ...account, companyName: customName };
-    }
-  } catch {}
   return account;
 };
 
@@ -118,47 +111,28 @@ export const findAccount = (emailOrId: string): DemoAccount | null => {
   // Alias support for master admin spelling
   if (clean === 'ramesraja.kn@gmail.com' || clean === 'rameesraja.kn@gmail.com') {
     const rAccount = DEMO_ACCOUNTS.find(a => a.email === 'rameesraja.kn@gmail.com') || DEMO_ACCOUNTS[2];
-    return applyCustomCompanyName(rAccount);
+    return rAccount;
   }
 
   // 1. Direct match in DEMO_ACCOUNTS
   const fromDemo = DEMO_ACCOUNTS.find(
     a => a.email.toLowerCase() === clean || a.id.toLowerCase() === clean
   );
-  if (fromDemo) return applyCustomCompanyName(fromDemo);
+  if (fromDemo) return fromDemo;
 
   // 2. Direct match in EXPORTED_PROFILES
   const fromExp = EXPORTED_PROFILES.find(
     p => (p.email && p.email.toLowerCase() === clean) || (p.user_id && p.user_id.toLowerCase() === clean)
   );
   if (fromExp) {
-    const acc: DemoAccount = {
+    return {
       id: fromExp.user_id,
       name: fromExp.company_name,
       email: fromExp.email || clean,
       companyName: fromExp.company_name,
       role: 'user'
     };
-    return applyCustomCompanyName(acc);
   }
-
-  // 3. Fallback match in localStorage cached profiles
-  try {
-    const local = JSON.parse(localStorage.getItem('carbonmash_data_profiles') || '[]');
-    const fromLocal = local.find(
-      (p: any) => (p.email && p.email.toLowerCase() === clean) || (p.user_id && p.user_id.toLowerCase() === clean)
-    );
-    if (fromLocal) {
-      const acc: DemoAccount = {
-        id: fromLocal.user_id || fromLocal.id,
-        name: fromLocal.company_name,
-        email: fromLocal.email || clean,
-        companyName: fromLocal.company_name,
-        role: 'user'
-      };
-      return applyCustomCompanyName(acc);
-    }
-  } catch {}
 
   return null;
 };
@@ -282,23 +256,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signIn = async (email: string, password?: string) => {
     const cleanEmail = (email || '').trim().toLowerCase();
     const target = findAccount(cleanEmail);
-    if (!target) {
-      return { error: new Error(`No account found for "${email}". Please verify the email address.`) };
+    if (!password) return { error: new Error('Password is required.') };
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+    if (error || !data?.user) {
+      return { error: error || new Error('Unable to sign in. Please verify your credentials.') };
     }
 
-    const expectedPassword = getRequiredPassword(cleanEmail);
-    if (!password || password !== expectedPassword) {
-      return { error: new Error('Invalid email or password. Please verify your credentials.') };
-    }
-
-    localStorage.setItem('active_account_email', target.email);
-    setActiveAccount(target);
-    const newUser = createAccountUser(target);
+    const account = target || {
+      id: data.user.id,
+      name: data.user.email || cleanEmail,
+      email: data.user.email || cleanEmail,
+      companyName: data.user.user_metadata?.company || cleanEmail,
+      role: 'user' as const
+    };
+    localStorage.setItem('active_account_email', account.email);
+    setActiveAccount(account);
+    const newUser = target ? createAccountUser(target) : data.user;
     setUser(newUser);
-    setSession({ user: newUser, access_token: 'demo_token' });
+    setSession({ user: newUser, access_token: data.session?.access_token || 'firebase' });
 
     try {
-      await seedUserMasterData(target.id, target.email, target.companyName);
+      await seedUserMasterData(account.id, account.email, account.companyName);
     } catch (err) {
       console.warn('Seed error during signIn:', err);
     }

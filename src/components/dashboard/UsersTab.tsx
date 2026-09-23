@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase, seedUserMasterData } from '@/integrations/supabase/client';
+import { supabase, seedUserMasterData } from '@/integrations/firebase/client';
 import { MASTER_ACCOUNT_ID, MASTER_ADMIN_EMAIL, canManageUsers, isAccountApproved, setAccountApproval } from '@/hooks/useAdmin';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -76,13 +76,7 @@ export const UsersTab = () => {
         const cleanEmail = (p.email || '').trim().toLowerCase();
         let companyName = p.company_name;
 
-        // Check custom saved company name in localStorage
-        const customName = localStorage.getItem(`custom_company_name_${p.user_id}`) ||
-                           localStorage.getItem(`custom_company_name_${p.id}`) ||
-                           localStorage.getItem(`custom_company_name_${cleanEmail}`);
-        if (customName) {
-          companyName = customName;
-        } else if (cleanEmail === 'rameesraja.kn@gmail.com' || cleanEmail === 'ramesraja.kn@gmail.com' || p.user_id === '0fe57d1f-2bf8-45ba-86ce-18b139a6b195') {
+        if (cleanEmail === 'rameesraja.kn@gmail.com' || cleanEmail === 'ramesraja.kn@gmail.com' || p.user_id === '0fe57d1f-2bf8-45ba-86ce-18b139a6b195') {
           companyName = 'CarbonMash';
         } else if (cleanEmail.includes('almac')) {
           companyName = cleanEmail.includes('user') ? 'Almac Group User' : 'Almac Group';
@@ -133,19 +127,6 @@ export const UsersTab = () => {
   const resetUser = async (userId: string, email?: string | null, companyName?: string | null) => {
     setRestoring(userId);
     try {
-      // Remove from deleted list if present
-      try {
-        const raw = localStorage.getItem('carbonmash_deleted_user_ids');
-        if (raw) {
-          const list: string[] = JSON.parse(raw);
-          const updated = list.filter(item => 
-            item !== userId && 
-            item !== (email ? email.toLowerCase() : '')
-          );
-          localStorage.setItem('carbonmash_deleted_user_ids', JSON.stringify(updated));
-        }
-      } catch {}
-
       // 1. Clear current collections for this user
       await supabase.from('emissions_data').delete().eq('user_id', userId);
       await supabase.from('clients').delete().eq('user_id', userId);
@@ -205,16 +186,6 @@ export const UsersTab = () => {
 
     setDeleting(userId);
     try {
-      // Record in persistent deleted list so it stays removed
-      try {
-        const raw = localStorage.getItem('carbonmash_deleted_user_ids');
-        const list: string[] = raw ? JSON.parse(raw) : [];
-        if (userId && !list.includes(userId)) list.push(userId);
-        if (profileId && !list.includes(profileId)) list.push(profileId);
-        if (email && !list.includes(email.trim().toLowerCase())) list.push(email.trim().toLowerCase());
-        localStorage.setItem('carbonmash_deleted_user_ids', JSON.stringify(list));
-      } catch {}
-
       // Delete user's data
       await supabase.from('emissions_data').delete().eq('user_id', userId);
       await supabase.from('clients').delete().eq('user_id', userId);

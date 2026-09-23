@@ -13,7 +13,7 @@ import { AnomalyDetection } from './AnomalyDetection';
 import { AuditReportConfigDialog, type ReportConfig } from './AuditReportConfigDialog';
 import { generateAuditReport } from './AuditReportGenerator';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/firebase/client';
 
 interface ResultsSummaryProps {
   scope1Entries: Scope1Entry[];

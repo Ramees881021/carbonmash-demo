@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/firebase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Search, History, Plus, Pencil, Trash2, ChevronDown, ChevronUp, Zap } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface AuditLogEntry {
   id: string;
@@ -38,6 +40,7 @@ export const AuditTrailTab = () => {
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
   const [entryDetailsCache, setEntryDetailsCache] = useState<Record<string, EntryDetails | null>>({});
   const [loadingDetails, setLoadingDetails] = useState<string | null>(null);
+  const [clearing, setClearing] = useState(false);
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -76,6 +79,25 @@ export const AuditTrailTab = () => {
 
     setEntryDetailsCache(prev => ({ ...prev, [log.entry_id]: (data as EntryDetails | null) }));
     setLoadingDetails(null);
+  };
+
+  const handleClearAuditTrail = async () => {
+    if (!user || logs.length === 0) return;
+    setClearing(true);
+    const { error } = await supabase
+      .from('carbon_audit_log')
+      .delete()
+      .eq('user_id', user.id);
+
+    if (error) {
+      toast.error('Failed to clear audit trail');
+    } else {
+      setLogs([]);
+      setEntryDetailsCache({});
+      setExpandedLogId(null);
+      toast.success('Audit trail cleared');
+    }
+    setClearing(false);
   };
 
   const filteredLogs = logs.filter(log => {
@@ -126,7 +148,18 @@ export const AuditTrailTab = () => {
             Complete history of all changes to carbon calculator entries
           </p>
         </div>
-        <Badge variant="secondary">{filteredLogs.length} records</Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary">{filteredLogs.length} records</Badge>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleClearAuditTrail}
+            disabled={clearing || logs.length === 0}
+          >
+            {clearing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+            Clear Audit Trail
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}

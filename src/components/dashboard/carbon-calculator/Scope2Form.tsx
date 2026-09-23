@@ -28,11 +28,12 @@ interface Scope2FormProps {
   entries: Scope2Entry[];
   onChange: (entries: Scope2Entry[]) => void;
   site?: Site | null;
+  onClearAll?: () => void;
 }
 
 const genId = () => crypto.randomUUID();
 
-export const Scope2Form = ({ entries, onChange, site }: Scope2FormProps) => {
+export const Scope2Form = ({ entries, onChange, site, onClearAll }: Scope2FormProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<Scope2Entry | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -137,7 +138,7 @@ export const Scope2Form = ({ entries, onChange, site }: Scope2FormProps) => {
               variant="ghost"
               size="sm"
               className="gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
-              onClick={() => onChange([])}
+              onClick={onClearAll || (() => onChange([]))}
             >
               <Eraser className="h-4 w-4" /> Clear All
             </Button>

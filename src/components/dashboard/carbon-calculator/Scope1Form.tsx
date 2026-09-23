@@ -23,6 +23,7 @@ export interface Scope1Entry {
 interface Scope1FormProps {
   entries: Scope1Entry[];
   onChange: (entries: Scope1Entry[]) => void;
+  onClearAll?: () => void;
 }
 
 const genId = () => crypto.randomUUID();
@@ -45,7 +46,7 @@ const recalcScope1 = (entry: Scope1Entry): Scope1Entry => {
   return { ...entry, tco2e };
 };
 
-export const Scope1Form = ({ entries, onChange }: Scope1FormProps) => {
+export const Scope1Form = ({ entries, onChange, onClearAll }: Scope1FormProps) => {
   const [activeSection, setActiveSection] = useState<string>('stationary');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<Scope1Entry | null>(null);
@@ -131,6 +132,11 @@ export const Scope1Form = ({ entries, onChange }: Scope1FormProps) => {
           <Button variant="outline" size="sm" onClick={() => exportData(entries)} disabled={entries.length === 0} className="gap-1">
             <FileDown className="h-4 w-4" /> Export
           </Button>
+          {onClearAll && entries.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={onClearAll} className="gap-1 text-destructive hover:text-destructive hover:bg-destructive/10">
+              <Eraser className="h-4 w-4" /> Clear Scope 1
+            </Button>
+          )}
           <input
             ref={fileInputRef}
             type="file"

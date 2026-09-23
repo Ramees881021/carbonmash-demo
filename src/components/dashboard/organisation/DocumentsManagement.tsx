@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Plus, Upload, Trash2, Image as ImageIcon, Award } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/firebase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 

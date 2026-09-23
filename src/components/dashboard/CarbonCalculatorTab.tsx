@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDashboard } from '@/contexts/DashboardContext';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/firebase/client';
 import { Button } from '@/components/ui/button';
-import { Save, Loader2, Calculator } from 'lucide-react';
+import { Save, Loader2, Calculator, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SiteManager, type Site } from './carbon-calculator/SiteManager';
 import { Scope1Form, type Scope1Entry } from './carbon-calculator/Scope1Form';
@@ -49,38 +49,10 @@ const deriveScope2Factor = (category: string, quantity: number, tco2e: number, g
 
 type ScopeTab = 'results' | 'sites' | 'scope1' | 'scope2' | 'scope3';
 
-// LocalStorage draft helpers
-const DRAFT_KEY_PREFIX = 'carbon_calc_draft_';
-const getDraftKey = (userId: string, year: number) => `${DRAFT_KEY_PREFIX}${userId}_${year}`;
-
-const saveDraft = (userId: string, year: number, data: { sites: Site[]; selectedSiteId: string | null; scope1BySite: Record<string, Scope1Entry[]>; scope2BySite: Record<string, Scope2Entry[]>; scope3Entries: Scope3Entry[] }) => {
-  try {
-    localStorage.setItem(getDraftKey(userId, year), JSON.stringify(data));
-  } catch { /* quota exceeded – silently ignore */ }
-};
-
-const loadDraft = (userId: string, year: number) => {
-  try {
-    const raw = localStorage.getItem(getDraftKey(userId, year));
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
-};
-
-const clearDraft = (userId: string, year: number) => {
-  try { localStorage.removeItem(getDraftKey(userId, year)); } catch {}
-};
-
 export const CarbonCalculatorTab = () => {
   const { user } = useAuth();
   const { selectedYear } = useDashboard();
-  const [activeScope, setActiveScopeState] = useState<ScopeTab>(() => {
-    const saved = sessionStorage.getItem('carbon_calc_activeScope');
-    return (saved as ScopeTab) || 'sites';
-  });
-  const setActiveScope = (tab: ScopeTab) => {
-    setActiveScopeState(tab);
-    sessionStorage.setItem('carbon_calc_activeScope', tab);
-  };
+  const [activeScope, setActiveScope] = useState<ScopeTab>('sites');
   const [sites, setSites] = useState<Site[]>([]);
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
   const [scope1BySite, setScope1BySite] = useState<Record<string, Scope1Entry[]>>({});
@@ -88,23 +60,12 @@ export const CarbonCalculatorTab = () => {
   const [scope3Entries, setScope3Entries] = useState<Scope3Entry[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [dbLoaded, setDbLoaded] = useState(false);
 
-  // Auto-save draft to localStorage whenever state changes (after initial load)
-  useEffect(() => {
-    if (!user || !dbLoaded) return;
-    saveDraft(user.id, selectedYear, { sites, selectedSiteId, scope1BySite, scope2BySite, scope3Entries });
-  }, [sites, selectedSiteId, scope1BySite, scope2BySite, scope3Entries, user, selectedYear, dbLoaded]);
-
-  // Load saved data
+  // Load saved data from Cloud Firestore
   useEffect(() => {
     const load = async () => {
       if (!user) return;
-      setDbLoaded(false);
       setLoading(true);
-
-      // Check for a localStorage draft first
-      const draft = loadDraft(user.id, selectedYear);
 
       // Load sites from DB
       const { data: sitesData } = await supabase
@@ -126,38 +87,19 @@ export const CarbonCalculatorTab = () => {
         .eq('user_id', user.id)
         .eq('reporting_year', selectedYear);
 
-      // If we have a draft with more data than the DB, use the draft
-      const dbEntryCount = data?.length || 0;
-      const draftEntryCount = draft
-        ? Object.values(draft.scope1BySite || {}).flat().length +
-          Object.values(draft.scope2BySite || {}).flat().length +
-          (draft.scope3Entries || []).length
-        : 0;
-      const draftSiteCount = draft?.sites?.length || 0;
+      setSites(loadedSites);
+      if (loadedSites.length > 0 && !selectedSiteId) {
+        setSelectedSiteId(loadedSites[0].id);
+      }
 
-      if (draft && (draftEntryCount > dbEntryCount || draftSiteCount > loadedSites.length)) {
-        // Restore from draft – it has unsaved work
-        setSites(draft.sites || loadedSites);
-        setSelectedSiteId(draft.selectedSiteId || (draft.sites?.[0]?.id ?? loadedSites[0]?.id ?? null));
-        setScope1BySite(draft.scope1BySite || {});
-        setScope2BySite(draft.scope2BySite || {});
-        setScope3Entries(draft.scope3Entries || []);
-        toast.info('Restored unsaved draft from your previous session');
-      } else {
-        // Use DB data
-        setSites(loadedSites);
-        if (loadedSites.length > 0 && !selectedSiteId) {
-          setSelectedSiteId(loadedSites[0].id);
-        }
+      if (!error && data) {
+        const s1Map: Record<string, Scope1Entry[]> = {};
+        const s2Map: Record<string, Scope2Entry[]> = {};
+        const s3: Scope3Entry[] = [];
 
-        if (!error && data) {
-          const s1Map: Record<string, Scope1Entry[]> = {};
-          const s2Map: Record<string, Scope2Entry[]> = {};
-          const s3: Scope3Entry[] = [];
-
-          data.forEach((row: any) => {
-            const ad = row.activity_data || {};
-            if (row.scope === 1) {
+        data.forEach((row: any) => {
+          const ad = row.activity_data || {};
+          if (row.scope === 1) {
               const siteId = row.site_id || 'unknown';
               if (!s1Map[siteId]) s1Map[siteId] = [];
               const derived = (!row.emission_factor && !row.emission_factor_source)
@@ -217,12 +159,10 @@ export const CarbonCalculatorTab = () => {
           setScope2BySite(s2Map);
           setScope3Entries(s3);
         }
-      }
-      setDbLoaded(true);
-      setLoading(false);
-    };
-    load();
-  }, [user, selectedYear]);
+        setLoading(false);
+      };
+      load();
+    }, [user, selectedYear]);
   const handleSave = async () => {
     if (!user) return;
     setSaving(true);
@@ -353,10 +293,36 @@ export const CarbonCalculatorTab = () => {
         if (auditRows.length > 0) {
           await supabase.from('carbon_audit_log').insert(auditRows);
         }
+
+        // Sync calculated totals to emissions_data table for this reporting year
+        const allScope1Rows = Object.values(scope1BySite).flat();
+        const allScope2Rows = Object.values(scope2BySite).flat();
+        const scope1Total = allScope1Rows.reduce((s, e) => s + (Number(e.tco2e) || 0), 0);
+        const scope2Total = allScope2Rows.reduce((s, e) => s + (Number(e.tco2e) || 0), 0);
+        const scope3Total = scope3Entries.reduce((s, e) => s + (Number(e.tco2e) || 0), 0);
+
+        const { data: existingEmission } = await supabase
+          .from('emissions_data')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('reporting_year', selectedYear)
+          .maybeSingle();
+
+        const emissionPayload = {
+          ...(existingEmission || {}),
+          id: existingEmission?.id || `${user.id}_emissions_${selectedYear}`,
+          user_id: user.id,
+          reporting_year: selectedYear,
+          scope_1_emissions: scope1Total,
+          scope_2_emissions: scope2Total,
+          scope_3_emissions: scope3Total,
+          updated_at: new Date().toISOString()
+        };
+
+        await supabase.from('emissions_data').upsert(emissionPayload);
       }
     } else {
-      clearDraft(user.id, selectedYear);
-      toast.success('All entries cleared');
+      toast.success(existingMap.size > 0 ? 'All entries cleared' : 'Sites saved successfully');
       // Log all deletions
       if (existingMap.size > 0) {
         const deleteAuditRows = Array.from(existingMap.entries()).map(([oldId, oldEntry]) => ({
@@ -367,6 +333,7 @@ export const CarbonCalculatorTab = () => {
           new_values: null,
         }));
         await supabase.from('carbon_audit_log').insert(deleteAuditRows);
+
       }
     }
 
@@ -425,6 +392,20 @@ export const CarbonCalculatorTab = () => {
             {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
             Save All
           </Button>
+          {totalEmissions > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={() => {
+                setScope1BySite({});
+                setScope2BySite({});
+                setScope3Entries([]);
+              }}
+            >
+              <Trash2 className="h-4 w-4" /> Clear Data
+            </Button>
+          )}
         </div>
       </div>
 
@@ -481,6 +462,7 @@ export const CarbonCalculatorTab = () => {
                 <Scope1Form
                   entries={currentScope1}
                   onChange={entries => setScope1BySite(prev => ({ ...prev, [selectedSiteId]: entries }))}
+                  onClearAll={() => setScope1BySite({})}
                 />
               )}
             </>
@@ -503,6 +485,7 @@ export const CarbonCalculatorTab = () => {
                   entries={currentScope2}
                   onChange={entries => setScope2BySite(prev => ({ ...prev, [selectedSiteId]: entries }))}
                   site={selectedSite}
+                  onClearAll={() => setScope2BySite({})}
                 />
               )}
             </>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDashboard, DashboardProvider } from '@/contexts/DashboardContext';
 import { useMode, ModeProvider } from '@/contexts/ModeContext';
-import { supabase, seedUserMasterData } from '@/integrations/supabase/client';
+import { supabase, seedUserMasterData } from '@/integrations/firebase/client';
 import { Sidebar } from '@/components/dashboard/Sidebar';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { OverviewTab } from '@/components/dashboard/OverviewTab';
@@ -126,22 +126,15 @@ const DashboardContent = () => {
           ? 'Facilities & Energy Solutions' 
           : (isAlmac ? 'Pharmaceuticals & Biotechnology' : 'Carbon Management & Clean Tech');
 
-        const savedCustomName = localStorage.getItem(`custom_company_name_${user.id}`) ||
-                                (user.email ? localStorage.getItem(`custom_company_name_${user.email.toLowerCase()}`) : null) ||
-                                (profileRes.data?.id ? localStorage.getItem(`custom_company_name_${profileRes.data.id}`) : null);
-
         const profileData = (profileRes.data as any) || {
           id: user.id,
           user_id: user.id,
-          company_name: savedCustomName || defaultCompanyName,
+          company_name: defaultCompanyName,
           industry: defaultIndustry,
           currency: 'GBP',
           base_year: 2021,
           is_approved: approvedStatus,
         };
-        if (savedCustomName) {
-          profileData.company_name = savedCustomName;
-        }
         profileData.is_approved = approvedStatus;
 
         setProfile(profileData);
